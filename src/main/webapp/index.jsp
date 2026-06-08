@@ -1,5 +1,8 @@
-<html>
-<body>
-<h2>Hello World!</h2>
-</body>
-</html>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%
+if (session.getAttribute("userId") != null) {
+    response.sendRedirect(request.getContextPath() + "/dashboard");
+} else {
+    response.sendRedirect(request.getContextPath() + "/auth/login");
+}
+%>

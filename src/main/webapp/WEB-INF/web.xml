@@ -1,7 +1,106 @@
-<!DOCTYPE web-app PUBLIC
- "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
- "http://java.sun.com/dtd/web-app_2_3.dtd" >
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0"
+         metadata-complete="true">
 
-<web-app>
-  <display-name>Archetype Created Web Application</display-name>
+    <!-- Servlets Definition -->
+    <servlet>
+        <servlet-name>AuthServlet</servlet-name>
+        <servlet-class>com.humana.servlet.AuthServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>DashboardServlet</servlet-name>
+        <servlet-class>com.humana.servlet.DashboardServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ProfileServlet</servlet-name>
+        <servlet-class>com.humana.servlet.ProfileServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>MateriServlet</servlet-name>
+        <servlet-class>com.humana.servlet.MateriServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>PemesananServlet</servlet-name>
+        <servlet-class>com.humana.servlet.PemesananServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>PembayaranServlet</servlet-name>
+        <servlet-class>com.humana.servlet.PembayaranServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>HistoryServlet</servlet-name>
+        <servlet-class>com.humana.servlet.HistoryServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>MatchingServlet</servlet-name>
+        <servlet-class>com.humana.servlet.MatchingServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>PendapatanServlet</servlet-name>
+        <servlet-class>com.humana.servlet.PendapatanServlet</servlet-class>
+    </servlet>
+
+    <!-- Servlet Mappings -->
+    <servlet-mapping>
+        <servlet-name>AuthServlet</servlet-name>
+        <url-pattern>/auth/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>DashboardServlet</servlet-name>
+        <url-pattern>/dashboard</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ProfileServlet</servlet-name>
+        <url-pattern>/profile/*</url-pattern>
+        <url-pattern>/profil/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>MateriServlet</servlet-name>
+        <url-pattern>/materi/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>PemesananServlet</servlet-name>
+        <url-pattern>/pesan/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>PembayaranServlet</servlet-name>
+        <url-pattern>/bayar/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>HistoryServlet</servlet-name>
+        <url-pattern>/jadwal/*</url-pattern>
+        <url-pattern>/histori/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>MatchingServlet</servlet-name>
+        <url-pattern>/matching/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>PendapatanServlet</servlet-name>
+        <url-pattern>/pendapatan/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- Welcome File List -->
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
+
+    <!-- Session Configuration -->
+    <session-config>
+        <session-timeout>30</session-timeout>
+    </session-config>
+
+    <!-- Error Pages -->
+    <error-page>
+        <error-code>404</error-code>
+        <location>/WEB-INF/views/error/404.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>500</error-code>
+        <location>/WEB-INF/views/error/500.jsp</location>
+    </error-page>
+
 </web-app>

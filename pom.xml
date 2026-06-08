@@ -60,6 +60,27 @@
         <artifactId>maven-war-plugin</artifactId>
         <version>3.4.0</version>
       </plugin>
+
+      <!-- Cargo Plugin untuk mvn cargo:run -->
+      <plugin>
+        <groupId>org.codehaus.cargo</groupId>
+        <artifactId>cargo-maven3-plugin</artifactId>
+        <version>1.10.13</version>
+        <configuration>
+          <container>
+            <containerId>tomcat10x</containerId>
+            <!-- Cargo akan mengunduh Tomcat 10 otomatis ke folder target/ -->
+            <zipUrlInstaller>
+              <url>https://archive.apache.org/dist/tomcat/tomcat-10/v10.1.18/bin/apache-tomcat-10.1.18.zip</url>
+            </zipUrlInstaller>
+          </container>
+          <configuration>
+            <properties>
+              <cargo.servlet.port>8081</cargo.servlet.port>
+            </properties>
+          </configuration>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
