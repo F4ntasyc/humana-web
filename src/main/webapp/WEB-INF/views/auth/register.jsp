@@ -36,8 +36,13 @@
             justify-content: center;
             background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 50%, #EDE9FE 100%);
             position: relative;
+<<<<<<< HEAD
             overflow-x: hidden;
             padding: 2rem 0;
+=======
+            overflow: hidden;
+            padding: 0;
+>>>>>>> transitiontest
         }
 
         /* Decorative background orbs */
@@ -68,7 +73,11 @@
         .register-container {
             width: 100%;
             max-width: 480px;
+<<<<<<< HEAD
             padding: 1.5rem;
+=======
+            padding: 1rem;
+>>>>>>> transitiontest
             position: relative;
             z-index: 1;
         }
@@ -76,6 +85,7 @@
         /* Logo section */
         .brand-section {
             text-align: center;
+<<<<<<< HEAD
             margin-bottom: 2rem;
         }
         .brand-logo {
@@ -84,12 +94,26 @@
             color: var(--primary);
             letter-spacing: -1px;
             margin-bottom: 0.25rem;
+=======
+            margin-bottom: 0.75rem;
+        }
+        .brand-logo {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: -1px;
+            margin-bottom: 0.15rem;
+>>>>>>> transitiontest
         }
         .brand-logo span {
             color: var(--accent);
         }
         .brand-tagline {
+<<<<<<< HEAD
             font-size: 0.875rem;
+=======
+            font-size: 0.8rem;
+>>>>>>> transitiontest
             color: #64748B;
             font-weight: 400;
         }
@@ -101,12 +125,17 @@
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.6);
             border-radius: 1.25rem;
+<<<<<<< HEAD
             padding: 2.5rem 2rem;
+=======
+            padding: 1.5rem;
+>>>>>>> transitiontest
             box-shadow:
                 0 4px 6px -1px rgba(0, 0, 0, 0.05),
                 0 20px 50px -12px rgba(37, 99, 235, 0.15);
         }
         .register-card h2 {
+<<<<<<< HEAD
             font-size: 1.5rem;
             font-weight: 700;
             color: #1E293B;
@@ -116,6 +145,17 @@
             font-size: 0.875rem;
             color: #94A3B8;
             margin-bottom: 1.5rem;
+=======
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1E293B;
+            margin-bottom: 0.15rem;
+        }
+        .register-card .subtitle {
+            font-size: 0.8rem;
+            color: #94A3B8;
+            margin-bottom: 1rem;
+>>>>>>> transitiontest
         }
 
         /* Role toggle */
@@ -124,12 +164,20 @@
             background: #F1F5F9;
             border-radius: 0.75rem;
             padding: 4px;
+<<<<<<< HEAD
             margin-bottom: 1.5rem;
+=======
+            margin-bottom: 1rem;
+>>>>>>> transitiontest
             gap: 4px;
         }
         .role-btn {
             flex: 1;
+<<<<<<< HEAD
             padding: 0.65rem 1rem;
+=======
+            padding: 0.5rem 1rem;
+>>>>>>> transitiontest
             font-family: 'Inter', sans-serif;
             font-size: 0.875rem;
             font-weight: 600;
@@ -156,6 +204,7 @@
 
         /* Form inputs */
         .form-group {
+<<<<<<< HEAD
             margin-bottom: 1.125rem;
         }
         .form-group label {
@@ -164,25 +213,49 @@
             font-weight: 600;
             color: #475569;
             margin-bottom: 0.4rem;
+=======
+            margin-bottom: 0.75rem;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 0.25rem;
+>>>>>>> transitiontest
         }
         .input-wrapper {
             position: relative;
         }
         .input-wrapper .input-icon {
             position: absolute;
+<<<<<<< HEAD
             left: 0.875rem;
             top: 50%;
             transform: translateY(-50%);
             color: #94A3B8;
             font-size: 1.1rem;
+=======
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94A3B8;
+            font-size: 1rem;
+>>>>>>> transitiontest
             pointer-events: none;
             transition: color 0.2s;
         }
         .form-control {
             width: 100%;
+<<<<<<< HEAD
             padding: 0.75rem 0.875rem 0.75rem 2.75rem;
             font-family: 'Inter', sans-serif;
             font-size: 0.9rem;
+=======
+            padding: 0.6rem 0.875rem 0.6rem 2.25rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+>>>>>>> transitiontest
             border: 1.5px solid #E2E8F0;
             border-radius: 0.75rem;
             background: #F8FAFC;
@@ -202,14 +275,22 @@
         /* Password toggle */
         .password-toggle {
             position: absolute;
+<<<<<<< HEAD
             right: 0.875rem;
+=======
+            right: 0.75rem;
+>>>>>>> transitiontest
             top: 50%;
             transform: translateY(-50%);
             background: none;
             border: none;
             color: #94A3B8;
             cursor: pointer;
+<<<<<<< HEAD
             font-size: 1.1rem;
+=======
+            font-size: 1rem;
+>>>>>>> transitiontest
             padding: 0.25rem;
             transition: color 0.2s;
         }
@@ -219,8 +300,13 @@
 
         /* Password match indicator */
         .password-match {
+<<<<<<< HEAD
             font-size: 0.75rem;
             margin-top: 0.3rem;
+=======
+            font-size: 0.7rem;
+            margin-top: 0.25rem;
+>>>>>>> transitiontest
             display: none;
             align-items: center;
             gap: 0.25rem;
@@ -237,9 +323,15 @@
         /* Submit button */
         .btn-register {
             width: 100%;
+<<<<<<< HEAD
             padding: 0.8rem;
             font-family: 'Inter', sans-serif;
             font-size: 0.9375rem;
+=======
+            padding: 0.7rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+>>>>>>> transitiontest
             font-weight: 600;
             color: #fff;
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
@@ -267,10 +359,17 @@
         .alert-custom {
             border: none;
             border-radius: 0.75rem;
+<<<<<<< HEAD
             padding: 0.75rem 1rem;
             font-size: 0.8125rem;
             font-weight: 500;
             margin-bottom: 1.25rem;
+=======
+            padding: 0.5rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+>>>>>>> transitiontest
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -284,7 +383,11 @@
         /* Footer link */
         .register-footer {
             text-align: center;
+<<<<<<< HEAD
             margin-top: 1.75rem;
+=======
+            margin-top: 1rem;
+>>>>>>> transitiontest
             font-size: 0.875rem;
             color: #64748B;
         }
