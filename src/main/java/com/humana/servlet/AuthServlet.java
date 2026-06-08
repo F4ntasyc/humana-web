@@ -31,8 +31,8 @@ import java.sql.ResultSet;
  */
 public class AuthServlet extends HttpServlet {
 
-    private final GuruDAO guruDAO = new GuruDAOImpl();
-    private final MuridDAO muridDAO = new MuridDAOImpl();
+    private final GuruDAO guruDAO = new GuruDAO();
+    private final MuridDAO muridDAO = new MuridDAO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)

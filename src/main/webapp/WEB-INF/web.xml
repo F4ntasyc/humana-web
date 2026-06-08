@@ -17,4 +17,74 @@
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
 
+    <!-- ======== Servlet Definitions ======== -->
+
+    <servlet>
+        <servlet-name>AuthServlet</servlet-name>
+        <servlet-class>com.humana.servlet.AuthServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ProfileServlet</servlet-name>
+        <servlet-class>com.humana.servlet.ProfileServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>PendapatanServlet</servlet-name>
+        <servlet-class>com.humana.servlet.PendapatanServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>PemesananServlet</servlet-name>
+        <servlet-class>com.humana.servlet.PemesananServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>MatchingServlet</servlet-name>
+        <servlet-class>com.humana.servlet.MatchingServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>PembayaranServlet</servlet-name>
+        <servlet-class>com.humana.servlet.PembayaranServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>HistoryServlet</servlet-name>
+        <servlet-class>com.humana.servlet.HistoryServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>MateriServlet</servlet-name>
+        <servlet-class>com.humana.servlet.MateriServlet</servlet-class>
+    </servlet>
+
+    <!-- ======== Servlet Mappings ======== -->
+
+    <servlet-mapping>
+        <servlet-name>AuthServlet</servlet-name>
+        <url-pattern>/auth/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ProfileServlet</servlet-name>
+        <url-pattern>/profile/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>PendapatanServlet</servlet-name>
+        <url-pattern>/pendapatan/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>PemesananServlet</servlet-name>
+        <url-pattern>/pemesanan/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>MatchingServlet</servlet-name>
+        <url-pattern>/matching/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>PembayaranServlet</servlet-name>
+        <url-pattern>/pembayaran/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>HistoryServlet</servlet-name>
+        <url-pattern>/history/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>MateriServlet</servlet-name>
+        <url-pattern>/materi/*</url-pattern>
+    </servlet-mapping>
+
 </web-app>

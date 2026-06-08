@@ -19,11 +19,11 @@ import java.sql.*;
  *
  * <p>Adaptasi dari: pemesananController.js</p>
  * <p>Perbaikan: Draft pemesanan dimerge ke sini (bukan servlet terpisah).
- * Dropdown materi dan mapel dikonsolidasi.</p>
+ * Dropdown materi/mapel dipindahkan ke MateriServlet.</p>
  */
 public class PemesananServlet extends HttpServlet {
 
-    private final DraftPemesananDAO draftDAO = new DraftPemesananDAOImpl();
+    private final DraftPemesananDAO draftDAO = new DraftPemesananDAO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -32,12 +32,6 @@ public class PemesananServlet extends HttpServlet {
         if (pathInfo == null) pathInfo = "/";
 
         switch (pathInfo) {
-            case "/materi":
-                getMateriDropdown(req, resp);
-                break;
-            case "/mapel":
-                getMapelByJenjang(req, resp);
-                break;
             case "/cek-status":
                 cekStatusPemesanan(req, resp);
                 break;
@@ -70,120 +64,6 @@ public class PemesananServlet extends HttpServlet {
                 break;
             default:
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND);
-        }
-    }
-
-    /**
-     * Dropdown materi dengan JOIN MataPelajaran, filter id_mapel/nama_mapel/kelas.
-     * Adaptasi dari pemesananController.getMateriDropdown().
-     */
-    private void getMateriDropdown(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        resp.setContentType("application/json;charset=UTF-8");
-        PrintWriter out = resp.getWriter();
-
-        String idMapel = req.getParameter("id_mapel");
-        String mapel = req.getParameter("mapel");
-        String kelas = req.getParameter("kelas");
-
-        try {
-            StringBuilder sql = new StringBuilder(
-                    "SELECT m.id_materi, m.nama_materi, m.kelas, m.jurusan, m.id_mapel, "
-                    + "mp.nama_mapel, mp.jenjang FROM Materi m "
-                    + "LEFT JOIN MataPelajaran mp ON m.id_mapel = mp.id_mapel WHERE 1=1");
-
-            java.util.List<Object> params = new java.util.ArrayList<>();
-
-            if (idMapel != null && !idMapel.isEmpty()) {
-                sql.append(" AND m.id_mapel = ?");
-                params.add(Integer.parseInt(idMapel));
-            } else if (mapel != null && !mapel.isEmpty()) {
-                sql.append(" AND mp.nama_mapel = ?");
-                params.add(mapel);
-            }
-            if (kelas != null && !kelas.isEmpty()) {
-                sql.append(" AND m.kelas = ?");
-                params.add(Integer.parseInt(kelas));
-            }
-
-            StringBuilder dataJson = new StringBuilder("[");
-            try (Connection conn = DBConnection.getConnection();
-                 PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
-
-                for (int i = 0; i < params.size(); i++) {
-                    stmt.setObject(i + 1, params.get(i));
-                }
-
-                try (ResultSet rs = stmt.executeQuery()) {
-                    boolean first = true;
-                    while (rs.next()) {
-                        if (!first) dataJson.append(",");
-                        dataJson.append("{\"id_materi\":").append(rs.getInt("id_materi"))
-                                .append(",\"nama_materi\":\"").append(escapeJson(rs.getString("nama_materi"))).append("\"")
-                                .append(",\"kelas\":").append(rs.getInt("kelas"))
-                                .append(",\"jurusan\":\"").append(escapeJson(rs.getString("jurusan"))).append("\"")
-                                .append(",\"id_mapel\":").append(rs.getInt("id_mapel"))
-                                .append(",\"nama_mapel\":\"").append(escapeJson(rs.getString("nama_mapel"))).append("\"")
-                                .append(",\"jenjang\":\"").append(escapeJson(rs.getString("jenjang"))).append("\"")
-                                .append("}");
-                        first = false;
-                    }
-                }
-            }
-            dataJson.append("]");
-
-            out.print("{\"success\":true,\"data\":" + dataJson + "}");
-
-        } catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            out.print("{\"success\":false,\"message\":\"" + escapeJson(e.getMessage()) + "\"}");
-        }
-    }
-
-    /**
-     * Dropdown mata pelajaran, opsional filter jenjang.
-     * Adaptasi dari pemesananController.getMapelByJenjang().
-     */
-    private void getMapelByJenjang(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        resp.setContentType("application/json;charset=UTF-8");
-        PrintWriter out = resp.getWriter();
-
-        String jenjang = req.getParameter("jenjang");
-
-        try {
-            String sql;
-            if (jenjang != null && !jenjang.isEmpty()) {
-                sql = "SELECT id_mapel, nama_mapel, jenjang FROM MataPelajaran WHERE jenjang = ?";
-            } else {
-                sql = "SELECT id_mapel, nama_mapel, jenjang FROM MataPelajaran";
-            }
-
-            StringBuilder dataJson = new StringBuilder("[");
-            try (Connection conn = DBConnection.getConnection();
-                 PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-                if (jenjang != null && !jenjang.isEmpty()) {
-                    stmt.setString(1, jenjang);
-                }
-
-                try (ResultSet rs = stmt.executeQuery()) {
-                    boolean first = true;
-                    while (rs.next()) {
-                        if (!first) dataJson.append(",");
-                        dataJson.append("{\"id\":").append(rs.getInt("id_mapel"))
-                                .append(",\"namaMapel\":\"").append(escapeJson(rs.getString("nama_mapel"))).append("\"")
-                                .append(",\"jenjang\":\"").append(escapeJson(rs.getString("jenjang"))).append("\"")
-                                .append("}");
-                        first = false;
-                    }
-                }
-            }
-            dataJson.append("]");
-
-            out.print("{\"success\":true,\"data\":" + dataJson + "}");
-
-        } catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            out.print("{\"success\":false,\"message\":\"" + escapeJson(e.getMessage()) + "\"}");
         }
     }
 
