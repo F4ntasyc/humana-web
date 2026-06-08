@@ -36,7 +36,7 @@
             justify-content: center;
             background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 50%, #EDE9FE 100%);
             position: relative;
-            overflow: hidden;
+            overflow-x: hidden;
             padding: 2rem 0;
         }
 
