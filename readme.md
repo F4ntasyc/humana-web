@@ -7,7 +7,7 @@ Panduan ini untuk anggota tim yang ingin join dan menjalankan project HUMANA di 
 ## BAGIAN 1 — Yang Kamu Lakukan Dulu (Sebelum Teman Join)
 
 ### 1.1 Buat .gitignore
-
+    
 Buat file `.gitignore` di root project (`humana-web/`), isi dengan:
 
 ```

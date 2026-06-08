@@ -1,6 +1,7 @@
 package com.humana.servlet;
 
-import com.humana.dao.*;
+import com.humana.dao.GuruDAO;
+import com.humana.dao.MuridDAO;
 import com.humana.model.Guru;
 import com.humana.model.Murid;
 import com.humana.util.DBConnection;
@@ -12,7 +13,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -21,11 +21,16 @@ import java.sql.ResultSet;
  * Servlet untuk autentikasi dan registrasi pengguna.
  * URL Pattern: /auth/*
  *
- * <p>Adaptasi dari: authController.js + registerController.js</p>
- * <p>Perbedaan dari mobile:
+ * <p>MVC Controller — semua response melalui forward ke JSP atau redirect.
+ * Tidak ada response JSON.</p>
+ *
+ * <p>Routes:
  * <ul>
- *   <li>Menyimpan data ke HttpSession setelah login (web stateful)</li>
- *   <li>loginGoogle di-skip (tidak relevan untuk web monolitik)</li>
+ *   <li>GET  /auth/login    → tampilkan halaman login</li>
+ *   <li>GET  /auth/register → tampilkan halaman registrasi</li>
+ *   <li>GET  /auth/logout   → invalidate session, redirect ke login</li>
+ *   <li>POST /auth/login    → proses login, redirect ke dashboard</li>
+ *   <li>POST /auth/register → proses registrasi, redirect ke login</li>
  * </ul>
  * </p>
  */
@@ -40,10 +45,18 @@ public class AuthServlet extends HttpServlet {
         String pathInfo = req.getPathInfo();
         if (pathInfo == null) pathInfo = "/";
 
-        if ("/check-email".equals(pathInfo)) {
-            checkEmail(req, resp);
-        } else {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+        switch (pathInfo) {
+            case "/login":
+                showLogin(req, resp);
+                break;
+            case "/register":
+                showRegister(req, resp);
+                break;
+            case "/logout":
+                logout(req, resp);
+                break;
+            default:
+                resp.sendRedirect(req.getContextPath() + "/auth/login");
         }
     }
 
@@ -55,36 +68,77 @@ public class AuthServlet extends HttpServlet {
 
         switch (pathInfo) {
             case "/login":
-                login(req, resp);
+                processLogin(req, resp);
                 break;
             case "/register":
-                register(req, resp);
+                processRegister(req, resp);
                 break;
             case "/logout":
                 logout(req, resp);
                 break;
             default:
-                resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+                resp.sendRedirect(req.getContextPath() + "/auth/login");
         }
     }
 
+    // ======== GET Handlers ========
+
     /**
-     * Login — mencari user di tabel Guru dan Murid via UNION query.
-     * Adaptasi dari authController.login().
-     * Setelah berhasil, menyimpan userId, userRole, userName ke HttpSession.
+     * GET /auth/login — tampilkan halaman login.
+     * Jika sudah login (session ada), redirect ke /dashboard.
      */
-    private void login(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String email = req.getParameter("email");       // bisa email atau username
-        String password = req.getParameter("password");
-
-        resp.setContentType("application/json;charset=UTF-8");
-        PrintWriter out = resp.getWriter();
-
-        if (email == null || password == null || email.isEmpty() || password.isEmpty()) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            out.print("{\"success\":false,\"message\":\"Email dan password wajib diisi.\"}");
+    private void showLogin(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        HttpSession session = req.getSession(false);
+        if (session != null && session.getAttribute("userId") != null) {
+            resp.sendRedirect(req.getContextPath() + "/dashboard");
             return;
         }
+        req.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(req, resp);
+    }
+
+    /**
+     * GET /auth/register — tampilkan halaman registrasi.
+     */
+    private void showRegister(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        req.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(req, resp);
+    }
+
+    /**
+     * GET /auth/logout — invalidate session, redirect ke login.
+     */
+    private void logout(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException {
+        HttpSession session = req.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+        resp.sendRedirect(req.getContextPath() + "/auth/login");
+    }
+
+    // ======== POST Handlers ========
+
+    /**
+     * POST /auth/login — proses login via UNION query Guru + Murid.
+     * Jika berhasil: set session, redirect ke /dashboard.
+     * Jika gagal: set error attribute, forward ke login.jsp.
+     */
+    private void processLogin(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        String email = req.getParameter("email");
+        String password = req.getParameter("password");
+
+        // Validasi input kosong
+        if (email == null || email.trim().isEmpty()
+                || password == null || password.trim().isEmpty()) {
+            req.setAttribute("error", "Email dan password wajib diisi.");
+            req.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(req, resp);
+            return;
+        }
+
+        email = email.trim();
+        password = password.trim();
 
         String sql = "SELECT id_guru AS id, nama_guru AS nama, email_guru AS email, password, "
                 + "'GURU' AS role, username FROM Guru WHERE email_guru = ? OR username = ? "
@@ -111,45 +165,62 @@ public class AuthServlet extends HttpServlet {
                         session.setAttribute("userRole", rs.getString("role"));
                         session.setAttribute("userName", rs.getString("nama"));
 
-                        out.print("{\"success\":true,\"message\":\"Login berhasil.\","
-                                + "\"userId\":" + rs.getInt("id") + ","
-                                + "\"userRole\":\"" + rs.getString("role") + "\","
-                                + "\"userName\":\"" + escapeJson(rs.getString("nama")) + "\"}");
-                    } else {
-                        resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                        out.print("{\"success\":false,\"message\":\"Password salah!\"}");
+                        // PRG pattern: redirect setelah POST
+                        resp.sendRedirect(req.getContextPath() + "/dashboard");
+                        return;
                     }
-                } else {
-                    resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                    out.print("{\"success\":false,\"message\":\"Akun tidak terdaftar!\"}");
                 }
             }
         } catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            out.print("{\"success\":false,\"message\":\"" + escapeJson(e.getMessage()) + "\"}");
-        }
-    }
-
-    /**
-     * Register — membuat akun guru atau murid baru.
-     * Adaptasi dari registerController.register().
-     */
-    private void register(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String namaLengkap = req.getParameter("namaLengkap");
-        String role = req.getParameter("role");
-        String email = req.getParameter("email");
-        String password = req.getParameter("password");
-
-        resp.setContentType("application/json;charset=UTF-8");
-        PrintWriter out = resp.getWriter();
-
-        if (namaLengkap == null || role == null || email == null || password == null) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            out.print("{\"success\":false,\"message\":\"Semua field wajib diisi.\"}");
+            e.printStackTrace();
+            req.setAttribute("error", "Terjadi kesalahan sistem. Silakan coba lagi.");
+            req.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(req, resp);
             return;
         }
 
-        // Cek email sudah terdaftar
+        // Login gagal — email/password salah
+        req.setAttribute("error", "Email atau password salah.");
+        req.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(req, resp);
+    }
+
+    /**
+     * POST /auth/register — proses registrasi guru atau murid baru.
+     * Jika berhasil: redirect ke /auth/login?sukses=1 (PRG pattern).
+     * Jika gagal: set error attribute, forward ke register.jsp.
+     */
+    private void processRegister(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        String namaLengkap = req.getParameter("namaLengkap");
+        String email = req.getParameter("email");
+        String password = req.getParameter("password");
+        String konfirmasi = req.getParameter("konfirmasi");
+        String role = req.getParameter("role");
+
+        // Validasi field kosong
+        if (namaLengkap == null || namaLengkap.trim().isEmpty()
+                || email == null || email.trim().isEmpty()
+                || password == null || password.trim().isEmpty()
+                || konfirmasi == null || konfirmasi.trim().isEmpty()
+                || role == null || role.trim().isEmpty()) {
+            req.setAttribute("error", "Semua field wajib diisi.");
+            req.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(req, resp);
+            return;
+        }
+
+        namaLengkap = namaLengkap.trim();
+        email = email.trim();
+        password = password.trim();
+        konfirmasi = konfirmasi.trim();
+        role = role.trim();
+
+        // Validasi konfirmasi password
+        if (!password.equals(konfirmasi)) {
+            req.setAttribute("error", "Password dan konfirmasi password tidak sama.");
+            req.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(req, resp);
+            return;
+        }
+
+        // Cek email sudah terdaftar (UNION Guru + Murid)
         String checkSql = "SELECT email_guru AS email FROM Guru WHERE email_guru = ? "
                 + "UNION SELECT email FROM Murid WHERE email = ?";
 
@@ -161,90 +232,41 @@ public class AuthServlet extends HttpServlet {
 
             try (ResultSet rs = checkStmt.executeQuery()) {
                 if (rs.next()) {
-                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    out.print("{\"success\":false,\"message\":\"Email sudah terdaftar!\"}");
+                    req.setAttribute("error", "Email sudah terdaftar.");
+                    req.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(req, resp);
                     return;
                 }
             }
 
-            // Insert user baru
+            // Insert user baru sesuai role
+            boolean success;
             if ("Guru".equalsIgnoreCase(role)) {
                 Guru guru = new Guru(namaLengkap, email, password, namaLengkap,
                         null, null, null);
                 guru.setActive(false); // Default nonaktif saat registrasi
-                guruDAO.insert(guru);
-
-                resp.setStatus(HttpServletResponse.SC_CREATED);
-                out.print("{\"success\":true,\"message\":\"Registrasi berhasil.\","
-                        + "\"userId\":" + guru.getId() + ",\"role\":\"GURU\"}");
-
+                success = guruDAO.insert(guru);
             } else if ("Murid".equalsIgnoreCase(role)) {
                 Murid murid = new Murid(namaLengkap, email, password, namaLengkap,
                         null, null, null, 0, null);
-                muridDAO.insert(murid);
-
-                resp.setStatus(HttpServletResponse.SC_CREATED);
-                out.print("{\"success\":true,\"message\":\"Registrasi berhasil.\","
-                        + "\"userId\":" + murid.getId() + ",\"role\":\"MURID\"}");
+                success = muridDAO.insert(murid);
             } else {
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                out.print("{\"success\":false,\"message\":\"Role harus 'Guru' atau 'Murid'.\"}");
+                req.setAttribute("error", "Role harus 'Guru' atau 'Murid'.");
+                req.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(req, resp);
+                return;
+            }
+
+            if (success) {
+                // PRG pattern: redirect setelah POST berhasil
+                resp.sendRedirect(req.getContextPath() + "/auth/login?sukses=1");
+            } else {
+                req.setAttribute("error", "Gagal menyimpan data. Silakan coba lagi.");
+                req.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(req, resp);
             }
 
         } catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            out.print("{\"success\":false,\"message\":\"Gagal menyimpan data: " + escapeJson(e.getMessage()) + "\"}");
+            e.printStackTrace();
+            req.setAttribute("error", "Terjadi kesalahan sistem: " + e.getMessage());
+            req.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(req, resp);
         }
-    }
-
-    /**
-     * Check Email — cek apakah email sudah terdaftar di sistem.
-     * Adaptasi dari authController.checkEmail().
-     */
-    private void checkEmail(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String email = req.getParameter("email");
-        resp.setContentType("application/json;charset=UTF-8");
-        PrintWriter out = resp.getWriter();
-
-        if (email == null || email.isEmpty()) {
-            out.print("{\"exists\":false}");
-            return;
-        }
-
-        String sql = "SELECT email_guru AS email FROM Guru WHERE email_guru = ? "
-                + "UNION SELECT email FROM Murid WHERE email = ?";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, email);
-            stmt.setString(2, email);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                out.print("{\"exists\":" + rs.next() + "}");
-            }
-        } catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            out.print("{\"exists\":false,\"error\":\"" + escapeJson(e.getMessage()) + "\"}");
-        }
-    }
-
-    /**
-     * Logout — invalidate session.
-     */
-    private void logout(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        HttpSession session = req.getSession(false);
-        if (session != null) {
-            session.invalidate();
-        }
-        resp.setContentType("application/json;charset=UTF-8");
-        resp.getWriter().print("{\"success\":true,\"message\":\"Logout berhasil.\"}");
-    }
-
-    /** Escape karakter khusus untuk JSON string. */
-    private String escapeJson(String s) {
-        if (s == null) return "";
-        return s.replace("\\", "\\\\").replace("\"", "\\\"")
-                .replace("\n", "\\n").replace("\r", "\\r");
     }
 }

@@ -6,287 +6,155 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 /**
- * Servlet untuk pembayaran dan detail sesi.
- * URL Pattern: /pembayaran/*
- *
- * <p>Adaptasi dari: bankerController.js</p>
- * <p>Di-skip: prosesPembayaranMidtrans (payment gateway pihak ketiga)</p>
+ * Servlet untuk menangani proses pembayaran pesanan (POV Murid).
+ * URL Pattern: /bayar/*
  */
 public class PembayaranServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        String pathInfo = req.getPathInfo();
-        if (pathInfo == null) pathInfo = "/";
+        HttpSession session = req.getSession(false);
+        if (session == null || session.getAttribute("userId") == null) {
+            resp.sendRedirect(req.getContextPath() + "/auth/login");
+            return;
+        }
 
-        if (pathInfo.startsWith("/detail/")) {
-            getSesiDetail(req, resp, pathInfo.substring(8));
-        } else if (pathInfo.startsWith("/status/")) {
-            getStatusPembayaran(req, resp, pathInfo.substring(8));
+        String userRole = (String) session.getAttribute("userRole");
+        if (!"MURID".equals(userRole)) {
+            resp.sendRedirect(req.getContextPath() + "/dashboard");
+            return;
+        }
+
+        String pathInfo = req.getPathInfo();
+        if (pathInfo == null || "/".equals(pathInfo)) {
+            tampilkanPembayaran(req, resp);
         } else {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            resp.sendRedirect(req.getContextPath() + "/dashboard");
         }
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
+        HttpSession session = req.getSession(false);
+        if (session == null || session.getAttribute("userId") == null) {
+            resp.sendRedirect(req.getContextPath() + "/auth/login");
+            return;
+        }
+
         String pathInfo = req.getPathInfo();
-        if (pathInfo == null) pathInfo = "/";
-
-        switch (pathInfo) {
-            case "/bayar":
-                bayarSimulasi(req, resp);
-                break;
-            case "/bayar-cod":
-                prosesPembayaranCod(req, resp);
-                break;
-            default:
-                resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+        if ("/proses".equals(pathInfo)) {
+            prosesPembayaran(req, resp);
+        } else {
+            resp.sendRedirect(req.getContextPath() + "/dashboard");
         }
     }
 
-    /**
-     * Detail sesi lengkap: pemesanan + guru + murid + materi + pembayaran.
-     * Adaptasi dari bankerController.getSesiDetail().
-     */
-    private void getSesiDetail(HttpServletRequest req, HttpServletResponse resp, String idStr)
-            throws IOException {
-        resp.setContentType("application/json;charset=UTF-8");
-        PrintWriter out = resp.getWriter();
-
-        try {
-            int id = Integer.parseInt(idStr);
-
-            String sql = "SELECT p.id_pemesanan, p.status_pemesanan, p.waktu_mulai, p.waktu_selesai, "
-                    + "p.lokasi_sesi, "
-                    + "TIMESTAMPDIFF(MINUTE, p.waktu_mulai, p.waktu_selesai) AS durasi_menit, "
-                    + "murid.id_murid, murid.nama_murid, murid.email AS email_murid, "
-                    + "guru.id_guru, guru.nama_guru, guru.email_guru, "
-                    + "materi.id_materi, materi.nama_materi, "
-                    + "mapel.id_mapel, mapel.nama_mapel, "
-                    + "bayar.id_pembayaran, bayar.biaya_sesi, bayar.biaya_jarak, "
-                    + "bayar.metode_pembayaran, bayar.nominal, bayar.status_pembayaran, "
-                    + "bayar.tanggal_pembayaran "
-                    + "FROM Pemesanan p "
-                    + "JOIN Murid murid ON murid.id_murid = p.id_murid "
-                    + "LEFT JOIN Guru guru ON guru.id_guru = p.id_guru "
-                    + "LEFT JOIN Materi materi ON materi.id_materi = p.id_materi "
-                    + "LEFT JOIN MataPelajaran mapel ON mapel.id_mapel = materi.id_mapel "
-                    + "LEFT JOIN Pembayaran bayar ON bayar.id_pemesanan = p.id_pemesanan "
-                    + "WHERE p.id_pemesanan = ? LIMIT 1";
-
-            try (Connection conn = DBConnection.getConnection();
-                 PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-                stmt.setInt(1, id);
-                try (ResultSet rs = stmt.executeQuery()) {
-                    if (!rs.next()) {
-                        resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                        out.print("{\"success\":false,\"message\":\"Detail sesi tidak ditemukan.\"}");
-                        return;
-                    }
-
-                    out.print("{\"success\":true,\"data\":{"
-                            + "\"id_pemesanan\":" + rs.getInt("id_pemesanan")
-                            + ",\"status_pemesanan\":\"" + escapeJson(rs.getString("status_pemesanan")) + "\""
-                            + ",\"waktu_mulai\":\"" + rs.getString("waktu_mulai") + "\""
-                            + ",\"waktu_selesai\":\"" + rs.getString("waktu_selesai") + "\""
-                            + ",\"lokasi_sesi\":\"" + escapeJson(rs.getString("lokasi_sesi")) + "\""
-                            + ",\"durasi_menit\":" + rs.getInt("durasi_menit")
-                            + ",\"murid\":{\"id_murid\":" + rs.getInt("id_murid")
-                            + ",\"nama_murid\":\"" + escapeJson(rs.getString("nama_murid")) + "\""
-                            + ",\"email\":\"" + escapeJson(rs.getString("email_murid")) + "\"}"
-                            + ",\"guru\":{\"id_guru\":" + rs.getInt("id_guru")
-                            + ",\"nama_guru\":\"" + escapeJson(rs.getString("nama_guru")) + "\""
-                            + ",\"email_guru\":\"" + escapeJson(rs.getString("email_guru")) + "\"}"
-                            + ",\"mata_pelajaran\":{\"id_mapel\":" + rs.getInt("id_mapel")
-                            + ",\"nama_mapel\":\"" + escapeJson(rs.getString("nama_mapel")) + "\"}"
-                            + ",\"materi\":{\"id_materi\":" + rs.getInt("id_materi")
-                            + ",\"nama_materi\":\"" + escapeJson(rs.getString("nama_materi")) + "\"}"
-                            + ",\"pembayaran\":{\"id_pembayaran\":" + rs.getInt("id_pembayaran")
-                            + ",\"biaya_sesi\":" + rs.getInt("biaya_sesi")
-                            + ",\"biaya_jarak\":" + rs.getInt("biaya_jarak")
-                            + ",\"metode_pembayaran\":\"" + escapeJson(rs.getString("metode_pembayaran")) + "\""
-                            + ",\"nominal\":" + rs.getInt("nominal")
-                            + ",\"status_pembayaran\":\"" + escapeJson(rs.getString("status_pembayaran")) + "\""
-                            + ",\"tanggal_pembayaran\":\"" + rs.getString("tanggal_pembayaran") + "\"}"
-                            + "}}");
-                }
-            }
-
-        } catch (NumberFormatException e) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            out.print("{\"success\":false,\"message\":\"ID tidak valid.\"}");
-        } catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            out.print("{\"success\":false,\"message\":\"" + escapeJson(e.getMessage()) + "\"}");
+    private void tampilkanPembayaran(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        String idStr = req.getParameter("id");
+        if (idStr == null || idStr.trim().isEmpty()) {
+            resp.sendRedirect(req.getContextPath() + "/jadwal");
+            return;
         }
-    }
 
-    /**
-     * Cek status pembayaran berdasarkan id_pemesanan.
-     * Adaptasi dari bankerController.getStatusPembayaran().
-     */
-    private void getStatusPembayaran(HttpServletRequest req, HttpServletResponse resp, String idStr)
-            throws IOException {
-        resp.setContentType("application/json;charset=UTF-8");
-        PrintWriter out = resp.getWriter();
+        String sql = "SELECT p.*, murid.nama_murid, guru.nama_guru, materi.nama_materi, " +
+                     "mapel.nama_mapel, bayar.* " +
+                     "FROM Pemesanan p " +
+                     "JOIN Murid murid ON murid.id_murid = p.id_murid " +
+                     "LEFT JOIN Guru guru ON guru.id_guru = p.id_guru " +
+                     "LEFT JOIN Materi materi ON materi.id_materi = p.id_materi " +
+                     "LEFT JOIN MataPelajaran mapel ON mapel.id_mapel = materi.id_mapel " +
+                     "LEFT JOIN Pembayaran bayar ON bayar.id_pemesanan = p.id_pemesanan " +
+                     "WHERE p.id_pemesanan = ?";
 
-        try {
-            String sql = "SELECT status_pembayaran FROM Pembayaran WHERE id_pemesanan = ? LIMIT 1";
-            try (Connection conn = DBConnection.getConnection();
-                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+        boolean found = false;
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-                stmt.setInt(1, Integer.parseInt(idStr));
-                try (ResultSet rs = stmt.executeQuery()) {
-                    if (rs.next() && rs.getString("status_pembayaran") != null) {
-                        out.print("{\"success\":true,\"status_pembayaran\":\""
-                                + escapeJson(rs.getString("status_pembayaran")) + "\"}");
-                    } else {
-                        out.print("{\"success\":true,\"status_pembayaran\":\"menunggu\"}");
-                    }
+            stmt.setInt(1, Integer.parseInt(idStr));
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    found = true;
+                    req.setAttribute("idPemesanan", rs.getInt("id_pemesanan"));
+                    req.setAttribute("namaGuru", rs.getString("nama_guru"));
+                    req.setAttribute("namaMapel", rs.getString("nama_mapel"));
+                    req.setAttribute("namaMateri", rs.getString("nama_materi"));
+                    req.setAttribute("waktuMulai", rs.getTimestamp("waktu_mulai"));
+                    req.setAttribute("waktuSelesai", rs.getTimestamp("waktu_selesai"));
+                    req.setAttribute("lokasiSesi", rs.getString("lokasi_sesi"));
+                    req.setAttribute("biayaSesi", rs.getInt("biaya_sesi"));
+                    req.setAttribute("biayaJarak", rs.getInt("biaya_jarak"));
+                    req.setAttribute("nominal", rs.getInt("nominal"));
+                    req.setAttribute("statusPembayaran", rs.getString("status_pembayaran"));
                 }
             }
         } catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            out.print("{\"success\":false,\"message\":\"" + escapeJson(e.getMessage()) + "\"}");
+            e.printStackTrace();
+            req.setAttribute("error", "Terjadi kesalahan saat memuat detail pembayaran.");
         }
+
+        if (!found) {
+            resp.sendRedirect(req.getContextPath() + "/jadwal");
+            return;
+        }
+
+        req.setAttribute("activePage", "jadwal");
+        req.getRequestDispatcher("/WEB-INF/views/murid/pembayaran.jsp").forward(req, resp);
     }
 
-    /**
-     * Bayar simulasi: update status pemesanan → berlangsung, pembayaran → lunas.
-     * Adaptasi dari bankerController.bayarSimulasi().
-     */
-    private void bayarSimulasi(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        resp.setContentType("application/json;charset=UTF-8");
-        PrintWriter out = resp.getWriter();
+    private void prosesPembayaran(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        String idPemesananStr = req.getParameter("idPemesanan");
+        String metodePembayaran = req.getParameter("metodePembayaran");
 
-        String idSesi = req.getParameter("id_sesi");
-        if (idSesi == null || idSesi.isEmpty()) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            out.print("{\"success\":false,\"message\":\"Parameter id_sesi wajib diisi.\"}");
+        if (idPemesananStr == null || idPemesananStr.trim().isEmpty() ||
+            metodePembayaran == null || metodePembayaran.trim().isEmpty()) {
+            resp.sendRedirect(req.getContextPath() + "/jadwal");
             return;
         }
 
         try (Connection conn = DBConnection.getConnection()) {
-            int id = Integer.parseInt(idSesi);
+            conn.setAutoCommit(false);
+            try {
+                int idPemesanan = Integer.parseInt(idPemesananStr);
 
-            // Cek sesi dan pembayaran
-            String checkSql = "SELECT p.id_pemesanan, bayar.id_pembayaran "
-                    + "FROM Pemesanan p LEFT JOIN Pembayaran bayar ON bayar.id_pemesanan = p.id_pemesanan "
-                    + "WHERE p.id_pemesanan = ? LIMIT 1";
-            int idPembayaran = 0;
-            try (PreparedStatement stmt = conn.prepareStatement(checkSql)) {
-                stmt.setInt(1, id);
-                try (ResultSet rs = stmt.executeQuery()) {
-                    if (!rs.next()) {
-                        resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                        out.print("{\"success\":false,\"message\":\"Sesi tidak ditemukan.\"}");
-                        return;
-                    }
-                    idPembayaran = rs.getInt("id_pembayaran");
-                }
-            }
-
-            // Update pemesanan → berlangsung
-            try (PreparedStatement stmt = conn.prepareStatement(
-                    "UPDATE Pemesanan SET status_pemesanan = 'berlangsung' WHERE id_pemesanan = ?")) {
-                stmt.setInt(1, id);
-                stmt.executeUpdate();
-            }
-
-            // Update pembayaran → lunas (jika ada)
-            if (idPembayaran > 0) {
-                try (PreparedStatement stmt = conn.prepareStatement(
-                        "UPDATE Pembayaran SET status_pembayaran = 'lunas', tanggal_pembayaran = CURDATE() "
-                        + "WHERE id_pembayaran = ?")) {
-                    stmt.setInt(1, idPembayaran);
+                String sqlPembayaran = "UPDATE Pembayaran SET status_pembayaran='lunas', " +
+                                       "metode_pembayaran=?, tanggal_pembayaran=NOW() " +
+                                       "WHERE id_pemesanan=?";
+                try (PreparedStatement stmt = conn.prepareStatement(sqlPembayaran)) {
+                    stmt.setString(1, metodePembayaran);
+                    stmt.setInt(2, idPemesanan);
                     stmt.executeUpdate();
                 }
+
+                String sqlPemesanan = "UPDATE Pemesanan SET status_pemesanan='berlangsung' " +
+                                      "WHERE id_pemesanan=?";
+                try (PreparedStatement stmt = conn.prepareStatement(sqlPemesanan)) {
+                    stmt.setInt(1, idPemesanan);
+                    stmt.executeUpdate();
+                }
+
+                conn.commit();
+                resp.sendRedirect(req.getContextPath() + "/jadwal?bayar=1");
+            } catch (Exception e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
             }
-
-            out.print("{\"success\":true,\"message\":\"Pembayaran berhasil dikonfirmasi.\","
-                    + "\"data\":{\"id_sesi\":" + id + ",\"status_sekarang\":\"berlangsung\"}}");
-
         } catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            out.print("{\"success\":false,\"message\":\"" + escapeJson(e.getMessage()) + "\"}");
+            e.printStackTrace();
+            resp.sendRedirect(req.getContextPath() + "/jadwal?error=Terjadi+kesalahan");
         }
-    }
-
-    /**
-     * Proses pembayaran tunai (COD): pemesanan → berlangsung, pembayaran → lunas + tunai.
-     * Adaptasi dari bankerController.prosesPembayaranCod().
-     */
-    private void prosesPembayaranCod(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        resp.setContentType("application/json;charset=UTF-8");
-        PrintWriter out = resp.getWriter();
-
-        String idSesi = req.getParameter("id_sesi");
-        if (idSesi == null || idSesi.isEmpty()) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            out.print("{\"success\":false,\"message\":\"Parameter id_sesi wajib diisi.\"}");
-            return;
-        }
-
-        try (Connection conn = DBConnection.getConnection()) {
-            int id = Integer.parseInt(idSesi);
-
-            // Update pemesanan → berlangsung
-            try (PreparedStatement stmt = conn.prepareStatement(
-                    "UPDATE Pemesanan SET status_pemesanan = 'berlangsung' WHERE id_pemesanan = ?")) {
-                stmt.setInt(1, id);
-                stmt.executeUpdate();
-            }
-
-            // Cek record pembayaran
-            String checkSql = "SELECT id_pembayaran FROM Pembayaran WHERE id_pemesanan = ? LIMIT 1";
-            boolean adaPembayaran = false;
-            try (PreparedStatement stmt = conn.prepareStatement(checkSql)) {
-                stmt.setInt(1, id);
-                try (ResultSet rs = stmt.executeQuery()) {
-                    adaPembayaran = rs.next();
-                }
-            }
-
-            if (adaPembayaran) {
-                try (PreparedStatement stmt = conn.prepareStatement(
-                        "UPDATE Pembayaran SET metode_pembayaran = 'tunai', "
-                        + "status_pembayaran = 'lunas', tanggal_pembayaran = CURDATE() "
-                        + "WHERE id_pemesanan = ?")) {
-                    stmt.setInt(1, id);
-                    stmt.executeUpdate();
-                }
-            } else {
-                // Fallback: buat record pembayaran baru
-                try (PreparedStatement stmt = conn.prepareStatement(
-                        "INSERT INTO Pembayaran (id_pemesanan, metode_pembayaran, nominal, "
-                        + "status_pembayaran, tanggal_pembayaran) "
-                        + "VALUES (?, 'tunai', 34000, 'lunas', CURDATE())")) {
-                    stmt.setInt(1, id);
-                    stmt.executeUpdate();
-                }
-            }
-
-            out.print("{\"success\":true,\"message\":\"Pemesanan tunai berhasil dicatat.\"}");
-
-        } catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            out.print("{\"success\":false,\"message\":\"" + escapeJson(e.getMessage()) + "\"}");
-        }
-    }
-
-    private String escapeJson(String s) {
-        if (s == null) return "";
-        return s.replace("\\", "\\\\").replace("\"", "\\\"")
-                .replace("\n", "\\n").replace("\r", "\\r");
     }
 }

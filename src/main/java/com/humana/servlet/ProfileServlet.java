@@ -1,6 +1,7 @@
 package com.humana.servlet;
 
-import com.humana.dao.*;
+import com.humana.dao.GuruDAO;
+import com.humana.dao.MuridDAO;
 import com.humana.model.Guru;
 import com.humana.model.Murid;
 import com.humana.util.DBConnection;
@@ -9,10 +10,9 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -21,9 +21,17 @@ import java.sql.ResultSet;
  * Servlet untuk manajemen profil pengguna (Guru & Murid).
  * URL Pattern: /profile/*
  *
- * <p>Adaptasi dari: editProfilController.js + feedbackController.js (getGuruRating, getMuridProfile)</p>
- * <p>Perbaikan: Profil guru/murid sekarang ada di satu servlet yang benar,
- * bukan di feedbackController seperti di mobile.</p>
+ * <p>MVC Controller — semua response melalui forward ke JSP atau redirect.
+ * Tidak ada response JSON.</p>
+ *
+ * <p>Routes:
+ * <ul>
+ *   <li>GET  /profile              → tampilkan halaman profil</li>
+ *   <li>POST /profile/update-basic → update data dasar, redirect</li>
+ *   <li>POST /profile/update-academic    → update akademik (MURID), redirect</li>
+ *   <li>POST /profile/update-availability → toggle aktif (GURU), redirect</li>
+ * </ul>
+ * </p>
  */
 public class ProfileServlet extends HttpServlet {
 
@@ -33,292 +41,238 @@ public class ProfileServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        String pathInfo = req.getPathInfo();
-        if (pathInfo == null) pathInfo = "/";
+        // Proteksi halaman
+        HttpSession session = req.getSession(false);
+        if (session == null || session.getAttribute("userId") == null) {
+            resp.sendRedirect(req.getContextPath() + "/auth/login");
+            return;
+        }
 
-        if (pathInfo.startsWith("/guru/")) {
-            getGuruProfile(req, resp, pathInfo.substring(6));
-        } else if (pathInfo.startsWith("/murid/")) {
-            getMuridProfile(req, resp, pathInfo.substring(7));
+        String pathInfo = req.getPathInfo();
+        if (pathInfo == null || "/".equals(pathInfo)) {
+            showProfile(req, resp, session);
         } else {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            resp.sendRedirect(req.getContextPath() + "/profile");
         }
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
+        // Proteksi halaman
+        HttpSession session = req.getSession(false);
+        if (session == null || session.getAttribute("userId") == null) {
+            resp.sendRedirect(req.getContextPath() + "/auth/login");
+            return;
+        }
+
         String pathInfo = req.getPathInfo();
         if (pathInfo == null) pathInfo = "/";
 
         switch (pathInfo) {
             case "/update-basic":
-                updateBasic(req, resp);
+                updateBasic(req, resp, session);
                 break;
             case "/update-academic":
-                updateAcademic(req, resp);
+                updateAcademic(req, resp, session);
                 break;
             case "/update-availability":
-                updateAvailability(req, resp);
+                updateAvailability(req, resp, session);
                 break;
             default:
-                resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+                resp.sendRedirect(req.getContextPath() + "/profile");
         }
     }
 
+    // ======== GET: Tampilkan Profil ========
+
     /**
-     * Ambil profil guru lengkap + rating (dihitung dari feedback).
-     * Adaptasi dari feedbackController.getGuruRating() — dipindahkan ke sini karena ini profil, bukan feedback.
+     * GET /profile — ambil data user, hitung rating (guru), forward ke profil.jsp
      */
-    private void getGuruProfile(HttpServletRequest req, HttpServletResponse resp, String idStr)
-            throws IOException {
-        resp.setContentType("application/json;charset=UTF-8");
-        PrintWriter out = resp.getWriter();
+    private void showProfile(HttpServletRequest req, HttpServletResponse resp, HttpSession session)
+            throws ServletException, IOException {
+        int userId = (int) session.getAttribute("userId");
+        String userRole = (String) session.getAttribute("userRole");
 
         try {
-            int idGuru = Integer.parseInt(idStr);
-            Guru guru = guruDAO.findById(idGuru);
+            if ("GURU".equals(userRole)) {
+                Guru guru = guruDAO.findById(userId);
+                if (guru == null) {
+                    req.setAttribute("error", "Data guru tidak ditemukan.");
+                    req.getRequestDispatcher("/WEB-INF/views/profil.jsp").forward(req, resp);
+                    return;
+                }
+                req.setAttribute("guru", guru);
 
-            if (guru == null) {
-                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                out.print("{\"success\":false,\"message\":\"Guru tidak ditemukan.\"}");
-                return;
-            }
-
-            // Hitung rating dari feedback (AVG via query, lebih efisien dari loop objek)
-            double ratingKalkulasi = 0;
-            String ratingSql = "SELECT AVG(f.rating) AS avg_rating FROM Feedback f "
-                    + "JOIN Pemesanan p ON f.id_pemesanan = p.id_pemesanan WHERE p.id_guru = ?";
-            try (Connection conn = DBConnection.getConnection();
-                 PreparedStatement stmt = conn.prepareStatement(ratingSql)) {
-                stmt.setInt(1, idGuru);
-                try (ResultSet rs = stmt.executeQuery()) {
-                    if (rs.next()) {
-                        ratingKalkulasi = rs.getDouble("avg_rating");
+                // Hitung AVG rating dari Feedback JOIN Pemesanan
+                double ratingAvg = 0;
+                String ratingSql = "SELECT AVG(f.rating) AS avg_rating FROM Feedback f "
+                        + "JOIN Pemesanan p ON f.id_pemesanan = p.id_pemesanan WHERE p.id_guru = ?";
+                try (Connection conn = DBConnection.getConnection();
+                     PreparedStatement stmt = conn.prepareStatement(ratingSql)) {
+                    stmt.setInt(1, userId);
+                    try (ResultSet rs = stmt.executeQuery()) {
+                        if (rs.next()) {
+                            ratingAvg = rs.getDouble("avg_rating");
+                            if (rs.wasNull()) ratingAvg = 0;
+                        }
                     }
                 }
+                req.setAttribute("rating", ratingAvg);
+
+            } else if ("MURID".equals(userRole)) {
+                Murid murid = muridDAO.findById(userId);
+                if (murid == null) {
+                    req.setAttribute("error", "Data murid tidak ditemukan.");
+                    req.getRequestDispatcher("/WEB-INF/views/profil.jsp").forward(req, resp);
+                    return;
+                }
+                req.setAttribute("murid", murid);
             }
-
-            out.print("{\"success\":true,\"data\":{"
-                    + "\"id\":" + guru.getId()
-                    + ",\"username\":\"" + escapeJson(guru.getUsername()) + "\""
-                    + ",\"email\":\"" + escapeJson(guru.getEmail()) + "\""
-                    + ",\"nama\":\"" + escapeJson(guru.getNamaUser()) + "\""
-                    + ",\"no_telepon\":\"" + escapeJson(guru.getNoTelepon()) + "\""
-                    + ",\"jenis_kelamin\":\"" + escapeJson(guru.getLabelJenisKelamin()) + "\""
-                    + ",\"alamat\":\"" + escapeJson(guru.getAlamat()) + "\""
-                    + ",\"rating\":" + String.format("%.2f", ratingKalkulasi)
-                    + ",\"is_active\":" + guru.isActive()
-                    + ",\"role\":\"GURU\"}}");
-
-        } catch (NumberFormatException e) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            out.print("{\"success\":false,\"message\":\"ID guru tidak valid.\"}");
         } catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            out.print("{\"success\":false,\"message\":\"" + escapeJson(e.getMessage()) + "\"}");
+            e.printStackTrace();
+            req.setAttribute("error", "Gagal memuat data profil.");
         }
+
+        req.setAttribute("activePage", "profil");
+        req.getRequestDispatcher("/WEB-INF/views/profil.jsp").forward(req, resp);
     }
 
+    // ======== POST: Update Data Dasar ========
+
     /**
-     * Ambil profil murid lengkap.
-     * Adaptasi dari feedbackController.getMuridProfile() — dipindahkan ke sini.
+     * POST /profile/update-basic — update nama, username, noTelepon, jenisKelamin, alamat.
+     * Berlaku untuk GURU dan MURID. Redirect ke /profile?sukses=1.
      */
-    private void getMuridProfile(HttpServletRequest req, HttpServletResponse resp, String idStr)
+    private void updateBasic(HttpServletRequest req, HttpServletResponse resp, HttpSession session)
             throws IOException {
-        resp.setContentType("application/json;charset=UTF-8");
-        PrintWriter out = resp.getWriter();
+        int userId = (int) session.getAttribute("userId");
+        String userRole = (String) session.getAttribute("userRole");
 
-        try {
-            int idMurid = Integer.parseInt(idStr);
-            Murid murid = muridDAO.findById(idMurid);
-
-            if (murid == null) {
-                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                out.print("{\"success\":false,\"message\":\"Murid tidak ditemukan.\"}");
-                return;
-            }
-
-            out.print("{\"success\":true,\"data\":{"
-                    + "\"id\":" + murid.getId()
-                    + ",\"username\":\"" + escapeJson(murid.getUsername()) + "\""
-                    + ",\"email\":\"" + escapeJson(murid.getEmail()) + "\""
-                    + ",\"nama\":\"" + escapeJson(murid.getNamaUser()) + "\""
-                    + ",\"no_telepon\":\"" + escapeJson(murid.getNoTelepon()) + "\""
-                    + ",\"jenis_kelamin\":\"" + escapeJson(murid.getLabelJenisKelamin()) + "\""
-                    + ",\"alamat\":\"" + escapeJson(murid.getAlamat()) + "\""
-                    + ",\"kelas\":" + murid.getKelas()
-                    + ",\"jurusan\":\"" + escapeJson(murid.getJurusan()) + "\""
-                    + ",\"jenjang\":\"" + escapeJson(murid.getJenjang()) + "\""
-                    + ",\"kelas_jurusan\":\"" + escapeJson(murid.getKelasJurusan()) + "\""
-                    + ",\"role\":\"MURID\"}}");
-
-        } catch (NumberFormatException e) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            out.print("{\"success\":false,\"message\":\"ID murid tidak valid.\"}");
-        } catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            out.print("{\"success\":false,\"message\":\"" + escapeJson(e.getMessage()) + "\"}");
-        }
-    }
-
-    /**
-     * Update profil dasar (nama, username, telp, gender, alamat).
-     * Adaptasi dari editProfilController.updateBasic().
-     */
-    private void updateBasic(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        resp.setContentType("application/json;charset=UTF-8");
-        PrintWriter out = resp.getWriter();
-
-        String idStr = req.getParameter("id");
-        String email = req.getParameter("email");
-        String name = req.getParameter("name");
+        String nama = req.getParameter("nama");
         String username = req.getParameter("username");
-        String phone = req.getParameter("phone");
-        String gender = req.getParameter("gender");
-        String domicile = req.getParameter("domicile");
-        String role = req.getParameter("role");
-
-        // Validasi format nomor telepon
-        if (phone != null && !phone.isEmpty()) {
-            try {
-                Long.parseLong(phone);
-            } catch (NumberFormatException e) {
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                out.print("{\"success\":false,\"message\":\"Format nomor telepon harus berupa angka.\"}");
-                return;
-            }
-        }
-
-        // Normalisasi gender ke kode DB
-        String genderDb = null;
-        if (gender != null && !gender.isEmpty()) {
-            String g = gender.trim().toLowerCase();
-            if ("laki-laki".equals(g) || "l".equals(g)) genderDb = "L";
-            else if ("perempuan".equals(g) || "p".equals(g)) genderDb = "P";
-        }
-
-        String userRole = (role != null) ? role.toLowerCase() : "murid";
+        String noTelepon = req.getParameter("noTelepon");
+        String jenisKelamin = req.getParameter("jenisKelamin");
+        String alamat = req.getParameter("alamat");
 
         try {
-            if ("guru".equals(userRole)) {
+            if ("GURU".equals(userRole)) {
                 String sql = "UPDATE Guru SET nama_guru = ?, username = ?, no_telepon = ?, "
-                        + "jenis_kelamin = ?, alamat = ? WHERE id_guru = ? OR email_guru = ?";
+                        + "jenis_kelamin = ?, alamat = ? WHERE id_guru = ?";
                 try (Connection conn = DBConnection.getConnection();
                      PreparedStatement stmt = conn.prepareStatement(sql)) {
-                    stmt.setString(1, name);
+                    stmt.setString(1, nama);
                     stmt.setString(2, username);
-                    stmt.setString(3, phone);
-                    stmt.setString(4, genderDb);
-                    stmt.setString(5, domicile);
-                    stmt.setString(6, idStr);
-                    stmt.setString(7, email);
+                    stmt.setString(3, noTelepon);
+                    stmt.setString(4, jenisKelamin);
+                    stmt.setString(5, alamat);
+                    stmt.setInt(6, userId);
                     stmt.executeUpdate();
                 }
             } else {
                 String sql = "UPDATE Murid SET nama_murid = ?, username = ?, no_telepon = ?, "
-                        + "jenis_kelamin = ?, alamat = ? WHERE id_murid = ? OR email = ?";
+                        + "jenis_kelamin = ?, alamat = ? WHERE id_murid = ?";
                 try (Connection conn = DBConnection.getConnection();
                      PreparedStatement stmt = conn.prepareStatement(sql)) {
-                    stmt.setString(1, name);
+                    stmt.setString(1, nama);
                     stmt.setString(2, username);
-                    stmt.setString(3, phone);
-                    stmt.setString(4, genderDb);
-                    stmt.setString(5, domicile);
-                    stmt.setString(6, idStr);
-                    stmt.setString(7, email);
+                    stmt.setString(3, noTelepon);
+                    stmt.setString(4, jenisKelamin);
+                    stmt.setString(5, alamat);
+                    stmt.setInt(6, userId);
                     stmt.executeUpdate();
                 }
             }
 
-            out.print("{\"success\":true,\"message\":\"Profil dasar berhasil diperbarui.\"}");
+            // Update session userName jika nama berubah
+            if (nama != null && !nama.trim().isEmpty()) {
+                session.setAttribute("userName", nama.trim());
+            }
+
+            resp.sendRedirect(req.getContextPath() + "/profile?sukses=1");
 
         } catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            out.print("{\"success\":false,\"message\":\"Gagal memperbarui profil: " + escapeJson(e.getMessage()) + "\"}");
+            e.printStackTrace();
+            resp.sendRedirect(req.getContextPath() + "/profile?error=Gagal+memperbarui+profil");
         }
     }
 
+    // ======== POST: Update Akademik (MURID only) ========
+
     /**
-     * Update kelas & jurusan murid.
-     * Adaptasi dari editProfilController.updateAcademic().
+     * POST /profile/update-academic — update kelas dan jurusan murid.
+     * Hanya untuk role MURID. Redirect ke /profile?sukses=1.
      */
-    private void updateAcademic(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        resp.setContentType("application/json;charset=UTF-8");
-        PrintWriter out = resp.getWriter();
-
-        String email = req.getParameter("email");
-        String major = req.getParameter("major");
-
-        Integer kelasDb = null;
-        String jurusanDb = null;
-
-        if (major != null && major.contains("-")) {
-            String[] parts = major.split("-");
-            try { kelasDb = Integer.parseInt(parts[0].trim()); } catch (NumberFormatException ignored) {}
-            if (parts.length > 1) {
-                String raw = parts[1].trim();
-                if (!raw.isEmpty() && !"(NULL)".equalsIgnoreCase(raw)) {
-                    jurusanDb = raw;
-                }
-            }
-        } else if (major != null && !major.isEmpty()) {
-            try { kelasDb = Integer.parseInt(major.trim()); } catch (NumberFormatException ignored) {}
+    private void updateAcademic(HttpServletRequest req, HttpServletResponse resp, HttpSession session)
+            throws IOException {
+        String userRole = (String) session.getAttribute("userRole");
+        if (!"MURID".equals(userRole)) {
+            resp.sendRedirect(req.getContextPath() + "/profile");
+            return;
         }
 
+        int userId = (int) session.getAttribute("userId");
+        String kelasStr = req.getParameter("kelas");
+        String jurusan = req.getParameter("jurusan");
+
         try {
-            String sql = "UPDATE Murid SET kelas = ?, jurusan = ? WHERE email = ?";
+            int kelas = 0;
+            if (kelasStr != null && !kelasStr.trim().isEmpty()) {
+                kelas = Integer.parseInt(kelasStr.trim());
+            }
+
+            String sql = "UPDATE Murid SET kelas = ?, jurusan = ? WHERE id_murid = ?";
             try (Connection conn = DBConnection.getConnection();
                  PreparedStatement stmt = conn.prepareStatement(sql)) {
-                if (kelasDb != null) stmt.setInt(1, kelasDb); else stmt.setNull(1, java.sql.Types.INTEGER);
-                stmt.setString(2, jurusanDb);
-                stmt.setString(3, email);
+                stmt.setInt(1, kelas);
+                stmt.setString(2, jurusan);
+                stmt.setInt(3, userId);
                 stmt.executeUpdate();
             }
 
-            out.print("{\"success\":true,\"message\":\"Profil akademik berhasil diperbarui.\"}");
+            resp.sendRedirect(req.getContextPath() + "/profile?sukses=1");
 
+        } catch (NumberFormatException e) {
+            resp.sendRedirect(req.getContextPath() + "/profile?error=Kelas+harus+berupa+angka");
         } catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            out.print("{\"success\":false,\"message\":\"Gagal memperbarui profil akademik.\"}");
+            e.printStackTrace();
+            resp.sendRedirect(req.getContextPath() + "/profile?error=Gagal+memperbarui+profil+akademik");
         }
     }
 
-    /**
-     * Toggle status ketersediaan guru (aktif/nonaktif).
-     * Adaptasi dari editProfilController.updateAvailability().
-     */
-    private void updateAvailability(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        resp.setContentType("application/json;charset=UTF-8");
-        PrintWriter out = resp.getWriter();
+    // ======== POST: Update Ketersediaan (GURU only) ========
 
-        String idGuru = req.getParameter("id_guru");
-        String isActiveStr = req.getParameter("is_active");
+    /**
+     * POST /profile/update-availability — toggle is_active guru.
+     * Hanya untuk role GURU. Redirect ke /profile?sukses=1.
+     */
+    private void updateAvailability(HttpServletRequest req, HttpServletResponse resp, HttpSession session)
+            throws IOException {
+        String userRole = (String) session.getAttribute("userRole");
+        if (!"GURU".equals(userRole)) {
+            resp.sendRedirect(req.getContextPath() + "/profile");
+            return;
+        }
+
+        int userId = (int) session.getAttribute("userId");
+        String isActiveStr = req.getParameter("isActive");
 
         try {
-            boolean isActive = "true".equalsIgnoreCase(isActiveStr) || "1".equals(isActiveStr);
-            int statusDb = isActive ? 1 : 0;
+            int isActive = "1".equals(isActiveStr) ? 1 : 0;
 
             String sql = "UPDATE Guru SET is_active = ? WHERE id_guru = ?";
             try (Connection conn = DBConnection.getConnection();
                  PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setInt(1, statusDb);
-                stmt.setInt(2, Integer.parseInt(idGuru));
+                stmt.setInt(1, isActive);
+                stmt.setInt(2, userId);
                 stmt.executeUpdate();
             }
 
-            out.print("{\"success\":true,\"message\":\"Status ketersediaan berhasil diubah menjadi "
-                    + (isActive ? "Aktif" : "Nonaktif") + ".\"}");
+            resp.sendRedirect(req.getContextPath() + "/profile?sukses=1");
 
         } catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            out.print("{\"success\":false,\"message\":\"Gagal memperbarui status ketersediaan.\"}");
+            e.printStackTrace();
+            resp.sendRedirect(req.getContextPath() + "/profile?error=Gagal+memperbarui+ketersediaan");
         }
-    }
-
-    private String escapeJson(String s) {
-        if (s == null) return "";
-        return s.replace("\\", "\\\\").replace("\"", "\\\"")
-                .replace("\n", "\\n").replace("\r", "\\r");
     }
 }
