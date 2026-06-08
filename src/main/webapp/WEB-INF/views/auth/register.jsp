@@ -36,8 +36,8 @@
             justify-content: center;
             background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 50%, #EDE9FE 100%);
             position: relative;
-            overflow-x: hidden;
-            padding: 2rem 0;
+            overflow: hidden;
+            padding: 0;
         }
 
         /* Decorative background orbs */
@@ -68,7 +68,7 @@
         .register-container {
             width: 100%;
             max-width: 480px;
-            padding: 1.5rem;
+            padding: 1rem;
             position: relative;
             z-index: 1;
         }
@@ -76,20 +76,20 @@
         /* Logo section */
         .brand-section {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 0.75rem;
         }
         .brand-logo {
-            font-size: 2.5rem;
+            font-size: 2rem;
             font-weight: 800;
             color: var(--primary);
             letter-spacing: -1px;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.15rem;
         }
         .brand-logo span {
             color: var(--accent);
         }
         .brand-tagline {
-            font-size: 0.875rem;
+            font-size: 0.8rem;
             color: #64748B;
             font-weight: 400;
         }
@@ -101,21 +101,21 @@
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.6);
             border-radius: 1.25rem;
-            padding: 2.5rem 2rem;
+            padding: 1.5rem;
             box-shadow:
                 0 4px 6px -1px rgba(0, 0, 0, 0.05),
                 0 20px 50px -12px rgba(37, 99, 235, 0.15);
         }
         .register-card h2 {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             font-weight: 700;
             color: #1E293B;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.15rem;
         }
         .register-card .subtitle {
-            font-size: 0.875rem;
+            font-size: 0.8rem;
             color: #94A3B8;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
         }
 
         /* Role toggle */
@@ -124,12 +124,12 @@
             background: #F1F5F9;
             border-radius: 0.75rem;
             padding: 4px;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
             gap: 4px;
         }
         .role-btn {
             flex: 1;
-            padding: 0.65rem 1rem;
+            padding: 0.5rem 1rem;
             font-family: 'Inter', sans-serif;
             font-size: 0.875rem;
             font-weight: 600;
@@ -156,33 +156,33 @@
 
         /* Form inputs */
         .form-group {
-            margin-bottom: 1.125rem;
+            margin-bottom: 0.75rem;
         }
         .form-group label {
             display: block;
-            font-size: 0.8125rem;
+            font-size: 0.75rem;
             font-weight: 600;
             color: #475569;
-            margin-bottom: 0.4rem;
+            margin-bottom: 0.25rem;
         }
         .input-wrapper {
             position: relative;
         }
         .input-wrapper .input-icon {
             position: absolute;
-            left: 0.875rem;
+            left: 0.75rem;
             top: 50%;
             transform: translateY(-50%);
             color: #94A3B8;
-            font-size: 1.1rem;
+            font-size: 1rem;
             pointer-events: none;
             transition: color 0.2s;
         }
         .form-control {
             width: 100%;
-            padding: 0.75rem 0.875rem 0.75rem 2.75rem;
+            padding: 0.6rem 0.875rem 0.6rem 2.25rem;
             font-family: 'Inter', sans-serif;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             border: 1.5px solid #E2E8F0;
             border-radius: 0.75rem;
             background: #F8FAFC;
@@ -202,14 +202,14 @@
         /* Password toggle */
         .password-toggle {
             position: absolute;
-            right: 0.875rem;
+            right: 0.75rem;
             top: 50%;
             transform: translateY(-50%);
             background: none;
             border: none;
             color: #94A3B8;
             cursor: pointer;
-            font-size: 1.1rem;
+            font-size: 1rem;
             padding: 0.25rem;
             transition: color 0.2s;
         }
@@ -219,8 +219,8 @@
 
         /* Password match indicator */
         .password-match {
-            font-size: 0.75rem;
-            margin-top: 0.3rem;
+            font-size: 0.7rem;
+            margin-top: 0.25rem;
             display: none;
             align-items: center;
             gap: 0.25rem;
@@ -237,9 +237,9 @@
         /* Submit button */
         .btn-register {
             width: 100%;
-            padding: 0.8rem;
+            padding: 0.7rem;
             font-family: 'Inter', sans-serif;
-            font-size: 0.9375rem;
+            font-size: 0.9rem;
             font-weight: 600;
             color: #fff;
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
@@ -267,10 +267,10 @@
         .alert-custom {
             border: none;
             border-radius: 0.75rem;
-            padding: 0.75rem 1rem;
-            font-size: 0.8125rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.8rem;
             font-weight: 500;
-            margin-bottom: 1.25rem;
+            margin-bottom: 0.75rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -284,7 +284,7 @@
         /* Footer link */
         .register-footer {
             text-align: center;
-            margin-top: 1.75rem;
+            margin-top: 1rem;
             font-size: 0.875rem;
             color: #64748B;
         }
