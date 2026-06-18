@@ -1,10 +1,10 @@
-</div> <!-- End of container from header -->
-
-<footer class="py-4 mt-auto border-top mt-5" style="background-color: #ffffff;">
-    <div class="container text-center text-muted" style="font-size: 0.9rem;">
-        &copy; 2024 HUMANA &mdash; Platform Les Privat
-    </div>
-</footer>
+<c:if test="${not empty sessionScope.userId}">
+        </div> <!-- end content-area -->
+    </main> <!-- end main-wrapper -->
+</c:if>
+<c:if test="${empty sessionScope.userId}">
+    </div> <!-- end fallback container -->
+</c:if>
 
 <!-- Bootstrap JS Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

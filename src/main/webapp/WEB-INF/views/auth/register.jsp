@@ -9,521 +9,557 @@
     <meta name="description" content="Daftar akun HUMANA sebagai Murid atau Guru les privat.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
+        /* ===== CSS Variables (Premium Glassmorphism) ===== */
         :root {
-            --primary: #2563EB;
-            --primary-dark: #1D4ED8;
-            --primary-light: #3B82F6;
-            --accent: #F97316;
-            --bg-gradient-start: #EFF6FF;
-            --bg-gradient-end: #DBEAFE;
+            --brand-navy: #2B4C7E;
+            --brand-navy-dark: #1E365C;
+            --brand-accent: #3A7D6B;
+            
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-highlight: rgba(255, 255, 255, 0.05);
+            
+            --text-main: #FFFFFF;
+            --text-muted: rgba(255, 255, 255, 0.6);
+            
+            --input-bg: rgba(255, 255, 255, 0.03);
+            --input-border: rgba(255, 255, 255, 0.1);
+            --input-focus: rgba(255, 255, 255, 0.25);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        /* ===== Reset & Base ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow: hidden; }
 
         body {
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--brand-navy-dark);
+            color: var(--text-main);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a { text-decoration: none; color: inherit; }
+
+        /* ===== Full Screen Layout ===== */
+        .app-container {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 50%, #EDE9FE 100%);
-            position: relative;
-<<<<<<< HEAD
-            overflow-x: hidden;
-            padding: 2rem 0;
-=======
-            overflow: hidden;
-            padding: 0;
->>>>>>> transitiontest
-        }
-
-        /* Decorative background orbs */
-        body::before,
-        body::after {
-            content: '';
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.4;
-            z-index: 0;
-        }
-        body::before {
-            width: 500px;
-            height: 500px;
-            background: var(--primary);
-            top: -150px;
-            left: -100px;
-        }
-        body::after {
-            width: 400px;
-            height: 400px;
-            background: var(--accent);
-            bottom: -120px;
-            right: -80px;
-        }
-
-        .register-container {
-            width: 100%;
-            max-width: 480px;
-<<<<<<< HEAD
-            padding: 1.5rem;
-=======
-            padding: 1rem;
->>>>>>> transitiontest
+            flex-direction: column;
+            height: 100vh;
             position: relative;
             z-index: 1;
         }
 
-        /* Logo section */
-        .brand-section {
-            text-align: center;
-<<<<<<< HEAD
-            margin-bottom: 2rem;
+        /* ===== Ambient Light Sources ===== */
+        .ambient-lights {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
         }
-        .brand-logo {
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: var(--primary);
-            letter-spacing: -1px;
-            margin-bottom: 0.25rem;
-=======
-            margin-bottom: 0.75rem;
+        .light-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.5;
+            animation: orbFloat 20s infinite alternate ease-in-out;
         }
-        .brand-logo {
-            font-size: 2rem;
-            font-weight: 800;
-            color: var(--primary);
-            letter-spacing: -1px;
-            margin-bottom: 0.15rem;
->>>>>>> transitiontest
+        .orb-1 {
+            width: 50vw; height: 50vw;
+            background: var(--brand-navy);
+            top: -10%; left: -10%;
         }
-        .brand-logo span {
-            color: var(--accent);
+        .orb-2 {
+            width: 40vw; height: 40vw;
+            background: rgba(58, 125, 107, 0.15); /* Accent glow */
+            bottom: -10%; right: -5%;
+            animation-delay: -5s;
         }
-        .brand-tagline {
-<<<<<<< HEAD
-            font-size: 0.875rem;
-=======
-            font-size: 0.8rem;
->>>>>>> transitiontest
-            color: #64748B;
-            font-weight: 400;
+        .orb-3 {
+            width: 30vw; height: 30vw;
+            background: rgba(255, 255, 255, 0.05);
+            top: 40%; left: 50%;
+            transform: translate(-50%, -50%);
         }
 
-        /* Card */
-        .register-card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            border-radius: 1.25rem;
-<<<<<<< HEAD
-            padding: 2.5rem 2rem;
-=======
-            padding: 1.5rem;
->>>>>>> transitiontest
-            box-shadow:
-                0 4px 6px -1px rgba(0, 0, 0, 0.05),
-                0 20px 50px -12px rgba(37, 99, 235, 0.15);
+        @keyframes orbFloat {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(5%, 10%) scale(1.1); }
         }
-        .register-card h2 {
-<<<<<<< HEAD
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #1E293B;
-            margin-bottom: 0.25rem;
+
+        /* ===== Navbar ===== */
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 3rem;
+            position: relative;
+            z-index: 10;
         }
-        .register-card .subtitle {
-            font-size: 0.875rem;
-            color: #94A3B8;
-            margin-bottom: 1.5rem;
-=======
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .brand-logo img { height: 28px; }
+        .brand-name {
             font-size: 1.25rem;
             font-weight: 700;
-            color: #1E293B;
-            margin-bottom: 0.15rem;
+            letter-spacing: -0.5px;
         }
-        .register-card .subtitle {
-            font-size: 0.8rem;
-            color: #94A3B8;
-            margin-bottom: 1rem;
->>>>>>> transitiontest
+        .nav-links { display: flex; gap: 2rem; }
+        .nav-links a {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover { color: var(--text-main); }
+
+        /* ===== Main Split Content ===== */
+        .split-layout {
+            flex: 1;
+            display: flex;
+            position: relative;
+            z-index: 10;
+            overflow: hidden; /* Important for scroll layout */
         }
 
-        /* Role toggle */
+        /* --- Left Side: Branding --- */
+        .hero-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 4rem;
+            position: relative;
+        }
+        
+        .hero-content {
+            max-width: 480px;
+            animation: fadeUp 1s ease-out;
+        }
+
+        .icon-glass-box {
+            width: 80px; height: 80px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        .icon-glass-box img {
+            width: 40px; height: 40px;
+            filter: brightness(0) invert(1);
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 1.25rem;
+            letter-spacing: -1px;
+        }
+        .hero-title span {
+            background: linear-gradient(135deg, #FFF, rgba(255,255,255,0.5));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero-title .accent {
+            background: linear-gradient(135deg, var(--brand-accent), #52A68F);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Floating particles */
+        .particles { position: absolute; inset: 0; pointer-events: none; }
+        .particle {
+            position: absolute; width: 3px; height: 3px;
+            background: rgba(255,255,255,0.2); border-radius: 50%;
+            animation: floatUp 15s linear infinite;
+        }
+        .particle:nth-child(1) { left: 20%; top: 80%; animation-duration: 12s; }
+        .particle:nth-child(2) { left: 60%; top: 90%; animation-duration: 18s; animation-delay: -5s; width: 4px; height: 4px; }
+        .particle:nth-child(3) { left: 80%; top: 70%; animation-duration: 15s; animation-delay: -2s; }
+        
+        @keyframes floatUp {
+            0% { transform: translateY(0); opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { transform: translateY(-500px); opacity: 0; }
+        }
+
+        /* --- Right Side: Form --- */
+        .auth-section {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem 2rem;
+            overflow: hidden;
+        }
+
+        .glass-card {
+            width: 100%;
+            max-width: 420px;
+            background: #FFFFFF;
+            border: none;
+            border-radius: 20px;
+            padding: 1.5rem 1.75rem;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            animation: fadeLeft 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            color: #1E293B;
+        }
+
+        @keyframes fadeLeft {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .card-header { margin-bottom: 1rem; text-align: center; }
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.2rem;
+            letter-spacing: -0.5px;
+            color: #1E293B;
+        }
+        .card-subtitle {
+            font-size: 0.8rem;
+            color: #64748B;
+        }
+        .card-subtitle a {
+            color: var(--brand-navy);
+            font-weight: 600;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .card-subtitle a:hover { color: var(--brand-accent); text-decoration: underline; }
+
+        /* Role Toggle */
         .role-toggle {
             display: flex;
             background: #F1F5F9;
-            border-radius: 0.75rem;
-            padding: 4px;
-<<<<<<< HEAD
-            margin-bottom: 1.5rem;
-=======
+            border: 1.5px solid #E2E8F0;
+            border-radius: 10px;
+            padding: 3px;
             margin-bottom: 1rem;
->>>>>>> transitiontest
-            gap: 4px;
+            gap: 3px;
         }
         .role-btn {
             flex: 1;
-<<<<<<< HEAD
-            padding: 0.65rem 1rem;
-=======
-            padding: 0.5rem 1rem;
->>>>>>> transitiontest
-            font-family: 'Inter', sans-serif;
-            font-size: 0.875rem;
+            padding: 0.45rem 1rem;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.8rem;
             font-weight: 600;
             color: #64748B;
             background: transparent;
             border: none;
-            border-radius: 0.6rem;
+            border-radius: 8px;
             cursor: pointer;
-            transition: all 0.25s ease;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.4rem;
         }
         .role-btn.active {
-            background: var(--primary);
-            color: #fff;
-            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+            background: var(--brand-navy);
+            color: #FFFFFF;
+            box-shadow: 0 4px 12px rgba(43, 76, 126, 0.3);
         }
         .role-btn:not(.active):hover {
-            background: #E2E8F0;
-            color: #334155;
-        }
-
-        /* Form inputs */
-        .form-group {
-<<<<<<< HEAD
-            margin-bottom: 1.125rem;
-        }
-        .form-group label {
-            display: block;
-            font-size: 0.8125rem;
-            font-weight: 600;
-            color: #475569;
-            margin-bottom: 0.4rem;
-=======
-            margin-bottom: 0.75rem;
-        }
-        .form-group label {
-            display: block;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: #475569;
-            margin-bottom: 0.25rem;
->>>>>>> transitiontest
-        }
-        .input-wrapper {
-            position: relative;
-        }
-        .input-wrapper .input-icon {
-            position: absolute;
-<<<<<<< HEAD
-            left: 0.875rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #94A3B8;
-            font-size: 1.1rem;
-=======
-            left: 0.75rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #94A3B8;
-            font-size: 1rem;
->>>>>>> transitiontest
-            pointer-events: none;
-            transition: color 0.2s;
-        }
-        .form-control {
-            width: 100%;
-<<<<<<< HEAD
-            padding: 0.75rem 0.875rem 0.75rem 2.75rem;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.9rem;
-=======
-            padding: 0.6rem 0.875rem 0.6rem 2.25rem;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.85rem;
->>>>>>> transitiontest
-            border: 1.5px solid #E2E8F0;
-            border-radius: 0.75rem;
-            background: #F8FAFC;
             color: #1E293B;
-            transition: all 0.2s ease;
+            background: #E2E8F0;
         }
-        .form-control:focus {
+
+        /* Form Controls */
+        .input-group { margin-bottom: 0.65rem; }
+        .input-group label {
+            display: block;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: #64748B;
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .input-wrapper { position: relative; }
+        .input-wrapper i.icon-left {
+            position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%);
+            color: #94A3B8; font-size: 1rem; pointer-events: none;
+            transition: color 0.3s;
+        }
+        .glass-input {
+            width: 100%;
+            background: #F8FAFC;
+            border: 1.5px solid #E2E8F0;
+            color: #1E293B;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            padding: 0.6rem 0.85rem 0.6rem 2.25rem;
+            border-radius: 10px;
+            transition: all 0.3s;
             outline: none;
-            border-color: var(--primary);
-            background: #fff;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
-        .form-control:focus ~ .input-icon {
-            color: var(--primary);
+        .glass-input::placeholder { color: #94A3B8; }
+        .glass-input:hover { background: #F1F5F9; }
+        .glass-input:focus {
+            background: #FFFFFF;
+            border-color: var(--brand-navy);
+            box-shadow: 0 0 0 3px rgba(43, 76, 126, 0.1);
         }
+        .glass-input:focus ~ i.icon-left { color: var(--brand-navy); }
 
-        /* Password toggle */
-        .password-toggle {
-            position: absolute;
-<<<<<<< HEAD
-            right: 0.875rem;
-=======
-            right: 0.75rem;
->>>>>>> transitiontest
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: #94A3B8;
-            cursor: pointer;
-<<<<<<< HEAD
-            font-size: 1.1rem;
-=======
-            font-size: 1rem;
->>>>>>> transitiontest
-            padding: 0.25rem;
-            transition: color 0.2s;
+        .btn-icon-right {
+            position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%);
+            background: none; border: none; color: #94A3B8;
+            cursor: pointer; font-size: 1rem; transition: color 0.3s;
+            display: flex; align-items: center; justify-content: center; padding: 0.2rem;
         }
-        .password-toggle:hover {
-            color: var(--primary);
-        }
+        .btn-icon-right:hover { color: var(--brand-navy); }
 
-        /* Password match indicator */
+        /* Password Match Text */
         .password-match {
-<<<<<<< HEAD
-            font-size: 0.75rem;
-            margin-top: 0.3rem;
-=======
             font-size: 0.7rem;
-            margin-top: 0.25rem;
->>>>>>> transitiontest
+            margin-top: 0.3rem;
             display: none;
             align-items: center;
             gap: 0.25rem;
         }
         .password-match.match {
             display: flex;
-            color: #16A34A;
+            color: #6EE7B7; /* Green for dark mode */
         }
         .password-match.mismatch {
             display: flex;
-            color: #DC2626;
+            color: #FCA5A5; /* Red for dark mode */
         }
 
-        /* Submit button */
-        .btn-register {
+        /* Primary Button */
+        .btn-primary {
             width: 100%;
-<<<<<<< HEAD
-            padding: 0.8rem;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.9375rem;
-=======
-            padding: 0.7rem;
-            font-family: 'Inter', sans-serif;
+            background: var(--brand-navy);
+            color: #FFFFFF;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
             font-size: 0.9rem;
->>>>>>> transitiontest
-            font-weight: 600;
-            color: #fff;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            border: none;
-            border-radius: 0.75rem;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.25s ease;
-            margin-top: 0.25rem;
+            transition: all 0.3s;
+            display: flex; justify-content: center; align-items: center; gap: 0.5rem;
+            box-shadow: 0 4px 12px rgba(43, 76, 126, 0.3);
+            margin-top: 0.75rem;
         }
-        .btn-register:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 8px 25px -8px rgba(37, 99, 235, 0.5);
-        }
-        .btn-register:active {
-            transform: translateY(0);
-        }
-        .btn-register:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(43, 76, 126, 0.4);
         }
 
-        /* Alert */
-        .alert-custom {
-            border: none;
-            border-radius: 0.75rem;
-<<<<<<< HEAD
-            padding: 0.75rem 1rem;
-            font-size: 0.8125rem;
-            font-weight: 500;
-            margin-bottom: 1.25rem;
-=======
-            padding: 0.5rem 0.75rem;
-            font-size: 0.8rem;
-            font-weight: 500;
-            margin-bottom: 0.75rem;
->>>>>>> transitiontest
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .alert-danger-custom {
+        /* Alerts */
+        .glass-alert {
             background: #FEF2F2;
+            border: 1px solid #FECACA;
             color: #DC2626;
-            border-left: 3px solid #DC2626;
+            padding: 0.5rem 0.75rem;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            display: flex; align-items: center; gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .glass-alert.success {
+            background: #F0FDF4;
+            border-color: #BBF7D0;
+            color: #16A34A;
         }
 
-        /* Footer link */
-        .register-footer {
-            text-align: center;
-<<<<<<< HEAD
-            margin-top: 1.75rem;
-=======
-            margin-top: 1rem;
->>>>>>> transitiontest
-            font-size: 0.875rem;
-            color: #64748B;
+        /* Footer */
+        .bottom-footer {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1rem 3rem;
+            position: relative; z-index: 10;
         }
-        .register-footer a {
-            color: var(--primary);
-            font-weight: 600;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-        .register-footer a:hover {
-            color: var(--primary-dark);
-            text-decoration: underline;
-        }
+        .footer-text { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
+        .footer-links { display: flex; gap: 1.5rem; }
+        .footer-links a { font-size: 0.75rem; color: rgba(255,255,255,0.4); transition: color 0.3s; }
+        .footer-links a:hover { color: var(--text-main); }
 
-        /* Animation */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        /* Responsive */
+        @media (max-width: 992px) {
+            .split-layout { flex-direction: column; overflow-y: auto; }
+            .hero-section { padding: 3rem 2rem; flex: 0 0 auto; align-items: center; text-align: center; }
+            .hero-title { font-size: 2.25rem; }
+            .auth-section { padding: 1rem; align-items: center; overflow-y: visible; }
+            .glass-card { padding: 1.5rem 1.5rem; }
+            .top-nav, .bottom-footer { padding: 1rem 1.5rem; flex-shrink: 0; }
+            .bottom-footer { flex-direction: column; gap: 1rem; }
         }
-        .register-container {
-            animation: fadeInUp 0.6s ease-out;
-        }
+        
+        /* Thin Scrollbar for auth section if needed */
+        .auth-section::-webkit-scrollbar { width: 6px; }
+        .auth-section::-webkit-scrollbar-track { background: transparent; }
+        .auth-section::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        .auth-section::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
     </style>
 </head>
 <body>
 
-<div class="register-container">
-    <!-- Brand / Logo -->
-    <div class="brand-section">
-        <div class="brand-logo">HUMAN<span>A</span></div>
-        <div class="brand-tagline">Platform Les Privat Terpercaya</div>
-    </div>
+<div class="ambient-lights">
+    <div class="light-orb orb-1"></div>
+    <div class="light-orb orb-2"></div>
+    <div class="light-orb orb-3"></div>
+</div>
 
-    <!-- Register Card -->
-    <div class="register-card">
-        <h2>Buat Akun Baru</h2>
-        <p class="subtitle">Bergabung sebagai murid atau guru les privat</p>
-
-        <%-- Alert: error registrasi --%>
-        <c:if test="${not empty error}">
-            <div class="alert-custom alert-danger-custom" id="alert-error">
-                <i class="bi bi-exclamation-circle-fill"></i>
-                ${error}
-            </div>
-        </c:if>
-
-        <!-- Role Toggle -->
-        <div class="role-toggle" id="roleToggle">
-            <button type="button" class="role-btn active" id="btnMurid" data-role="Murid">
-                <i class="bi bi-mortarboard"></i> Murid
-            </button>
-            <button type="button" class="role-btn" id="btnGuru" data-role="Guru">
-                <i class="bi bi-person-workspace"></i> Guru
-            </button>
+<div class="app-container">
+    <!-- Navbar -->
+    <nav class="top-nav">
+        <div class="brand-logo">
+            <img src="${pageContext.request.contextPath}/assets/images/LOGOH.png?v=3" alt="Logo">
+            <div class="brand-name">HUMANA.</div>
         </div>
+        <div class="nav-links">
+            <a href="#">Tentang</a>
+            <a href="#">Bantuan</a>
+        </div>
+    </nav>
 
-        <form method="post" action="${pageContext.request.contextPath}/auth/register"
-              id="registerForm" novalidate>
-            <!-- Hidden role -->
-            <input type="hidden" name="role" id="roleInput" value="Murid">
-
-            <!-- Nama Lengkap -->
-            <div class="form-group">
-                <label for="namaLengkap">Nama Lengkap</label>
-                <div class="input-wrapper">
-                    <input type="text" class="form-control" id="namaLengkap" name="namaLengkap"
-                           placeholder="Masukkan nama lengkap" required autocomplete="name">
-                    <i class="bi bi-person input-icon"></i>
-                </div>
+    <!-- Main Content -->
+    <main class="split-layout">
+        
+        <!-- Left: Branding -->
+        <section class="hero-section">
+            <div class="particles">
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
             </div>
-
-            <!-- Email -->
-            <div class="form-group">
-                <label for="email">Email</label>
-                <div class="input-wrapper">
-                    <input type="email" class="form-control" id="email" name="email"
-                           placeholder="contoh@email.com" required autocomplete="email">
-                    <i class="bi bi-envelope input-icon"></i>
+            
+            <div class="hero-content">
+                <div class="icon-glass-box">
+                    <img src="${pageContext.request.contextPath}/assets/images/LOGOH.png?v=3" alt="Icon">
                 </div>
+                <h1 class="hero-title">
+                    <span>Humanity in action,</span><br>
+                    <span class="accent">Learning in motion.</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Platform ekosistem pendidikan cerdas yang menghubungkan pelajar dan pengajar privat berkualitas untuk masa depan gemilang.
+                </p>
             </div>
+        </section>
 
-            <!-- Password -->
-            <div class="form-group">
-                <label for="password">Password</label>
-                <div class="input-wrapper">
-                    <input type="password" class="form-control" id="password" name="password"
-                           placeholder="Minimal 6 karakter" required autocomplete="new-password"
-                           minlength="6">
-                    <i class="bi bi-lock input-icon"></i>
-                    <button type="button" class="password-toggle" id="togglePassword"
-                            aria-label="Tampilkan password">
-                        <i class="bi bi-eye" id="togglePassIcon"></i>
+        <!-- Right: Auth Form -->
+        <section class="auth-section">
+            <div class="glass-card">
+                <div class="card-header">
+                    <h2 class="card-title">Buat Akun</h2>
+                    <p class="card-subtitle">
+                        Sudah punya akun? 
+                        <a href="${pageContext.request.contextPath}/auth/login">Masuk di sini</a>
+                    </p>
+                </div>
+
+                <c:if test="${not empty error}">
+                    <div class="glass-alert">
+                        <i class="bi bi-exclamation-circle"></i>
+                        ${error}
+                    </div>
+                </c:if>
+
+                <!-- Role Toggle -->
+                <div class="role-toggle" id="roleToggle">
+                    <button type="button" class="role-btn active" id="btnMurid" data-role="Murid">
+                        <i class="bi bi-mortarboard"></i> Murid
+                    </button>
+                    <button type="button" class="role-btn" id="btnGuru" data-role="Guru">
+                        <i class="bi bi-person-workspace"></i> Guru
                     </button>
                 </div>
-            </div>
 
-            <!-- Konfirmasi Password -->
-            <div class="form-group">
-                <label for="konfirmasi">Konfirmasi Password</label>
-                <div class="input-wrapper">
-                    <input type="password" class="form-control" id="konfirmasi" name="konfirmasi"
-                           placeholder="Ulangi password" required autocomplete="new-password">
-                    <i class="bi bi-shield-lock input-icon"></i>
-                    <button type="button" class="password-toggle" id="toggleKonfirmasi"
-                            aria-label="Tampilkan konfirmasi password">
-                        <i class="bi bi-eye" id="toggleKonfIcon"></i>
+                <form method="post" action="${pageContext.request.contextPath}/auth/register" id="registerForm" novalidate>
+                    <input type="hidden" name="role" id="roleInput" value="Murid">
+
+                    <div class="input-group">
+                        <label for="namaLengkap">Nama Lengkap</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="namaLengkap" name="namaLengkap" class="glass-input" placeholder="Masukkan nama lengkap" required autocomplete="name">
+                            <i class="bi bi-person icon-left"></i>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="email">Alamat Email</label>
+                        <div class="input-wrapper">
+                            <input type="email" id="email" name="email" class="glass-input" placeholder="contoh@email.com" required autocomplete="email">
+                            <i class="bi bi-envelope icon-left"></i>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="password">Kata Sandi</label>
+                        <div class="input-wrapper">
+                            <input type="password" id="password" name="password" class="glass-input" placeholder="Minimal 6 karakter" required autocomplete="new-password" minlength="6">
+                            <i class="bi bi-lock icon-left"></i>
+                            <button type="button" class="btn-icon-right" id="togglePassword">
+                                <i class="bi bi-eye-slash" id="togglePassIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="konfirmasi">Konfirmasi Sandi</label>
+                        <div class="input-wrapper">
+                            <input type="password" id="konfirmasi" name="konfirmasi" class="glass-input" placeholder="Ulangi kata sandi" required autocomplete="new-password">
+                            <i class="bi bi-shield-lock icon-left"></i>
+                            <button type="button" class="btn-icon-right" id="toggleKonfirmasi">
+                                <i class="bi bi-eye-slash" id="toggleKonfIcon"></i>
+                            </button>
+                        </div>
+                        <div class="password-match" id="passwordMatch">
+                            <i class="bi" id="matchIcon"></i>
+                            <span id="matchText"></span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary" id="btnRegister">
+                        Daftar Sekarang <i class="bi bi-arrow-right"></i>
                     </button>
-                </div>
-                <div class="password-match" id="passwordMatch">
-                    <i class="bi" id="matchIcon"></i>
-                    <span id="matchText"></span>
-                </div>
+                </form>
             </div>
+        </section>
+    </main>
 
-            <!-- Submit -->
-            <button type="submit" class="btn-register" id="btnRegister">
-                <i class="bi bi-person-plus me-1"></i> Daftar
-            </button>
-        </form>
-
-        <!-- Login link -->
-        <div class="register-footer">
-            Sudah punya akun?
-            <a href="${pageContext.request.contextPath}/auth/login">Masuk</a>
+    <!-- Footer -->
+    <footer class="bottom-footer">
+        <div class="footer-text">&copy; 2024 Humana. Hak cipta dilindungi.</div>
+        <div class="footer-links">
+            <a href="#">Privasi</a>
+            <a href="#">Persyaratan</a>
         </div>
-    </div>
+    </footer>
 </div>
 
 <script>
-    // ======== Role Toggle ========
+    // Role Toggle
     const btnMurid = document.getElementById('btnMurid');
     const btnGuru = document.getElementById('btnGuru');
     const roleInput = document.getElementById('roleInput');
@@ -540,26 +576,24 @@
         roleInput.value = 'Guru';
     });
 
-    // ======== Password Toggle ========
+    // Password Toggles
     function setupToggle(toggleBtnId, inputId, iconId) {
         document.getElementById(toggleBtnId).addEventListener('click', function () {
             const input = document.getElementById(inputId);
             const icon = document.getElementById(iconId);
             if (input.type === 'password') {
                 input.type = 'text';
-                icon.classList.remove('bi-eye');
-                icon.classList.add('bi-eye-slash');
+                icon.classList.replace('bi-eye-slash', 'bi-eye');
             } else {
                 input.type = 'password';
-                icon.classList.remove('bi-eye-slash');
-                icon.classList.add('bi-eye');
+                icon.classList.replace('bi-eye', 'bi-eye-slash');
             }
         });
     }
     setupToggle('togglePassword', 'password', 'togglePassIcon');
     setupToggle('toggleKonfirmasi', 'konfirmasi', 'toggleKonfIcon');
 
-    // ======== Password Match Validation ========
+    // Password Match Validation
     const passwordInput = document.getElementById('password');
     const konfirmasiInput = document.getElementById('konfirmasi');
     const matchDiv = document.getElementById('passwordMatch');
@@ -571,38 +605,39 @@
         const konf = konfirmasiInput.value;
 
         if (konf.length === 0) {
-            matchDiv.className = 'password-match';
+            matchDiv.style.display = 'none';
             return;
         }
 
+        matchDiv.style.display = 'flex';
         if (pass === konf) {
             matchDiv.className = 'password-match match';
             matchIcon.className = 'bi bi-check-circle-fill';
-            matchText.textContent = 'Password cocok';
+            matchText.textContent = 'Kata sandi cocok';
         } else {
             matchDiv.className = 'password-match mismatch';
             matchIcon.className = 'bi bi-x-circle-fill';
-            matchText.textContent = 'Password tidak cocok';
+            matchText.textContent = 'Kata sandi tidak cocok';
         }
     }
 
     passwordInput.addEventListener('input', checkPasswordMatch);
     konfirmasiInput.addEventListener('input', checkPasswordMatch);
 
-    // ======== Form Submit Validation ========
+    // Form Submit Validation
     document.getElementById('registerForm').addEventListener('submit', function (e) {
         const pass = passwordInput.value;
         const konf = konfirmasiInput.value;
 
         if (pass !== konf) {
             e.preventDefault();
+            matchDiv.style.display = 'flex';
             matchDiv.className = 'password-match mismatch';
             matchIcon.className = 'bi bi-x-circle-fill';
-            matchText.textContent = 'Password tidak cocok — perbaiki sebelum mendaftar';
+            matchText.textContent = 'Kata sandi tidak cocok — perbaiki sebelum mendaftar';
             konfirmasiInput.focus();
         }
     });
 </script>
-
 </body>
 </html>

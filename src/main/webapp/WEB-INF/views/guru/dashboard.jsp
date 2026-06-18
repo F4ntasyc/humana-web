@@ -6,119 +6,231 @@
 <c:set var="activePage" value="dashboard" />
 <jsp:include page="/WEB-INF/views/layout/header.jsp" />
 
-<div class="page-header mb-4 d-flex justify-content-between align-items-center flex-wrap">
-    <div>
-        <h1 class="fw-bold mb-1" style="color: #1E293B;">Halo, ${sessionScope.userName}! 👋</h1>
-        <p class="text-secondary mb-0">Selamat datang di dashboard pengajar.</p>
-    </div>
-    <div class="mt-3 mt-md-0 bg-white px-4 py-2 rounded-pill shadow-sm border d-flex align-items-center">
-        <i class="bi bi-star-fill text-warning fs-4 me-2"></i>
-        <span class="fw-bold fs-5 text-dark"><fmt:formatNumber value="${rating}" maxFractionDigits="1" minFractionDigits="1"/> <span class="text-secondary fs-6 fw-normal">/ 5.0</span></span>
+<style>
+    .dashboard-banner {
+        background-color: var(--humana-navy);
+        border-radius: 24px;
+        padding: 3rem;
+        position: relative;
+        overflow: hidden;
+    }
+    .dashboard-banner::after {
+        content: '';
+        position: absolute;
+        right: -10%;
+        top: -30%;
+        width: 500px;
+        height: 500px;
+        background: var(--humana-teal);
+        border-radius: 50%;
+        opacity: 0.15;
+        filter: blur(60px);
+        z-index: 1;
+        pointer-events: none;
+    }
+    .greeting {
+        position: relative;
+        z-index: 10;
+    }
+    .greeting .title {
+        font-size: 2.75rem;
+        font-weight: 700;
+        color: white;
+        letter-spacing: -1px;
+        margin-bottom: 0.5rem;
+    }
+    .greeting .subtitle {
+        font-size: 1.1rem;
+        color: rgba(255,255,255,0.7);
+        max-width: 600px;
+        line-height: 1.6;
+    }
+    
+    .section-title { font-size: 1.25rem; font-weight: 700; color: #1E293B; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center;}
+    
+    .glass-panel {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+        border: 1px solid #E2E8F0;
+        position: relative;
+        z-index: 10;
+    }
+
+    .req-card {
+        border-radius: 12px;
+        border: 1px solid #E2E8F0;
+        padding: 1.5rem;
+        transition: all 0.3s;
+    }
+    .req-card:hover {
+        border-color: var(--humana-teal);
+        box-shadow: 0 10px 20px rgba(58, 125, 107, 0.08);
+    }
+    .avatar-circle {
+        width: 48px; height: 48px;
+        background: var(--humana-navy);
+        color: white;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: bold; font-size: 1.1rem;
+    }
+    
+    .shortcut-item {
+        display: flex; align-items: center; gap: 1.25rem;
+        padding: 1.5rem;
+        border: 1px solid #E2E8F0;
+        border-radius: 16px;
+        margin-bottom: 1.25rem;
+        text-decoration: none; color: #1E293B;
+        transition: all 0.3s;
+        background: white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+    }
+    .shortcut-item:hover {
+        border-color: var(--humana-teal);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+        transform: translateY(-3px);
+    }
+    .shortcut-item-icon {
+        width: 56px; height: 56px;
+        background: #F1F5F9; color: #64748B;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem;
+        transition: all 0.3s;
+    }
+    .shortcut-item:hover .shortcut-item-icon {
+        background: var(--humana-teal); color: white;
+        box-shadow: 0 8px 20px rgba(58, 125, 107, 0.3);
+    }
+    
+    .stat-box {
+        background: white;
+        border: 1px solid #E2E8F0;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+    }
+    .stat-label { font-size: 0.75rem; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; }
+    .stat-value { font-size: 1.75rem; font-weight: 700; color: #1E293B; }
+</style>
+
+<div class="dashboard-banner mb-4">
+    <div class="greeting">
+        <div class="title">Halo, ${sessionScope.userName}!</div>
+        <div class="subtitle">Semangat mengajar hari ini! Kamu memiliki <strong>${sesiAktif} sesi aktif</strong> dan <strong>${permintaanMasuk} permintaan baru</strong> yang menunggu persetujuan.</div>
     </div>
 </div>
 
-<!-- Shortcuts -->
-<div class="row g-3 mb-4">
-    <div class="col-6 col-md-3">
-        <a href="${pageContext.request.contextPath}/jadwal" class="btn btn-outline-primary bg-white w-100 py-3 fw-semibold shadow-sm position-relative" style="border-radius: 1rem;">
-            <i class="bi bi-bell d-block fs-4 mb-1"></i> Permintaan
-            <c:if test="${permintaanMasuk > 0}">
-                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light">
-                    ${permintaanMasuk}
-                </span>
-            </c:if>
-        </a>
-    </div>
-    <div class="col-6 col-md-3">
-        <a href="${pageContext.request.contextPath}/jadwal" class="btn btn-primary w-100 py-3 fw-semibold shadow-sm" style="border-radius: 1rem;">
-            <i class="bi bi-calendar-event d-block fs-4 mb-1"></i> Jadwal
-        </a>
-    </div>
-    <div class="col-6 col-md-3">
-        <a href="${pageContext.request.contextPath}/histori" class="btn btn-outline-primary bg-white w-100 py-3 fw-semibold shadow-sm" style="border-radius: 1rem;">
-            <i class="bi bi-clock-history d-block fs-4 mb-1"></i> Riwayat
-        </a>
-    </div>
-    <div class="col-6 col-md-3">
-        <a href="${pageContext.request.contextPath}/profil" class="btn btn-outline-primary bg-white w-100 py-3 fw-semibold shadow-sm" style="border-radius: 1rem;">
-            <i class="bi bi-person d-block fs-4 mb-1"></i> Profil
-        </a>
-    </div>
-</div>
-
-<!-- Stats -->
-<div class="row g-4 mb-5">
-    <div class="col-md-4">
-        <div class="card shadow-sm border-0 h-100" style="border-radius: 1.25rem; background: linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%); border-left: 5px solid #EF4444 !important;">
-            <div class="card-body p-4 d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="text-secondary fw-semibold mb-2">Permintaan Masuk</div>
-                    <div class="fs-1 fw-bold text-danger">${permintaanMasuk}</div>
-                </div>
-                <i class="bi bi-envelope-open text-danger opacity-50" style="font-size: 3rem;"></i>
+<div class="row g-4 position-relative" style="z-index: 10;">
+    <!-- Kiri: Permintaan Terbaru -->
+    <div class="col-lg-8">
+        <div class="glass-panel h-100">
+            <div class="section-title">
+                Permintaan Baru
+                <a href="${pageContext.request.contextPath}/jadwal" class="fs-6 fw-semibold text-decoration-none" style="color: var(--humana-teal);">Lihat Semua</a>
             </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card shadow-sm border-0 h-100" style="border-radius: 1.25rem; background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%); border-left: 5px solid #3B82F6 !important;">
-            <div class="card-body p-4 d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="text-secondary fw-semibold mb-2">Sesi Aktif</div>
-                    <div class="fs-1 fw-bold text-primary">${sesiAktif}</div>
-                </div>
-                <i class="bi bi-calendar-check text-primary opacity-50" style="font-size: 3rem;"></i>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card shadow-sm border-0 h-100" style="border-radius: 1.25rem; background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%); border-left: 5px solid #64748B !important;">
-            <div class="card-body p-4 d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="text-secondary fw-semibold mb-2">Sesi Selesai</div>
-                    <div class="fs-1 fw-bold text-dark">${sesiSelesai}</div>
-                </div>
-                <i class="bi bi-check2-all text-secondary opacity-50" style="font-size: 3rem;"></i>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Permintaan Terbaru -->
-<h4 class="fw-bold mb-3" style="color: #1E293B;">Permintaan Terbaru</h4>
-<div class="row g-4">
-    <c:choose>
-        <c:when test="${empty permintaanTerbaru}">
-            <div class="col-12">
-                <div class="alert alert-light border-0 py-4 text-center text-secondary" style="border-radius: 1rem; background-color: #F8FAFC;">
-                    <i class="bi bi-inbox fs-3 d-block mb-2 text-muted"></i>
-                    Belum ada permintaan masuk terbaru.
-                </div>
-            </div>
-        </c:when>
-        <c:otherwise>
-            <c:forEach items="${permintaanTerbaru}" var="p">
-                <div class="col-md-4">
-                    <div class="card shadow-sm border-0 h-100" style="border-radius: 1.25rem; border-top: 5px solid #F59E0B;">
-                        <div class="card-body p-4 text-center">
-                            <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex justify-content-center align-items-center mb-3 text-warning" style="width: 60px; height: 60px; font-size: 1.5rem;">
-                                <i class="bi bi-person-fill"></i>
-                            </div>
-                            <h5 class="fw-bold text-dark mb-1">${p.namaMurid}</h5>
-                            <div class="text-secondary fw-semibold mb-3">${p.namaMateri}</div>
-                            
-                            <div class="d-inline-block bg-light rounded-pill px-3 py-2 mb-4 text-secondary" style="font-size: 0.85rem;">
-                                <i class="bi bi-clock me-1"></i> <fmt:formatDate value="${p.waktuMulai}" pattern="dd MMM yyyy, HH:mm" />
-                            </div>
-                            
-                            <div>
-                                <a href="${pageContext.request.contextPath}/jadwal" class="btn btn-outline-primary w-100 rounded-pill fw-semibold">Lihat Detail</a>
-                            </div>
+            
+            <div class="row g-3">
+                <c:choose>
+                    <c:when test="${empty permintaanTerbaru}">
+                        <div class="col-12 text-center py-5">
+                            <i class="bi bi-inbox fs-1 text-muted mb-3 d-block"></i>
+                            <h5 class="fw-bold text-dark mb-1">Tidak Ada Permintaan</h5>
+                            <p class="text-secondary small">Belum ada murid yang memesan sesi saat ini.</p>
                         </div>
-                    </div>
+                    </c:when>
+                    <c:otherwise>
+                        <c:forEach items="${permintaanTerbaru}" var="p">
+                            <div class="col-md-6">
+                                <div class="req-card h-100 d-flex flex-column bg-white">
+                                    <div class="d-flex align-items-center gap-3 mb-4">
+                                        <div class="avatar-circle">${p.namaMurid.substring(0,2).toUpperCase()}</div>
+                                        <div>
+                                            <div class="fw-bold text-dark" style="font-size: 1.1rem; line-height: 1.2;">${p.namaMurid}</div>
+                                            <div class="text-secondary small fw-medium mt-1">${p.namaMateri}</div>
+                                        </div>
+                                    </div>
+                                    <div class="row g-0 mb-4 mt-auto">
+                                        <div class="col-7">
+                                            <div class="text-secondary" style="font-size: 0.7rem; font-weight: 700; letter-spacing: 0.5px;">WAKTU</div>
+                                            <div class="fw-bold text-dark small"><fmt:formatDate value="${p.waktuMulai}" pattern="dd MMM yyyy, HH:mm" /></div>
+                                        </div>
+                                        <div class="col-5 border-start ps-3">
+                                            <div class="text-secondary" style="font-size: 0.7rem; font-weight: 700; letter-spacing: 0.5px;">STATUS</div>
+                                            <div class="fw-bold text-warning small">Menunggu</div>
+                                        </div>
+                                    </div>
+                                    <a href="${pageContext.request.contextPath}/jadwal" class="btn btn-dark w-100 rounded-pill fw-semibold" style="background: var(--humana-navy); border: none;">Lihat Detail</a>
+                                </div>
+                            </div>
+                        </c:forEach>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Kanan: Shortcuts -->
+    <div class="col-lg-4">
+        <a href="${pageContext.request.contextPath}/jadwal" class="shortcut-item mt-2 mt-lg-0">
+            <div class="shortcut-item-icon"><i class="bi bi-calendar2-week"></i></div>
+            <div>
+                <div class="fw-bold fs-5 mb-1">Jadwal Saya</div>
+                <div class="small text-secondary">Kelola jadwal mengajar</div>
+            </div>
+        </a>
+        <a href="${pageContext.request.contextPath}/materi" class="shortcut-item">
+            <div class="shortcut-item-icon"><i class="bi bi-journal-bookmark"></i></div>
+            <div>
+                <div class="fw-bold fs-5 mb-1">Materi</div>
+                <div class="small text-secondary">Akses modul materi</div>
+            </div>
+        </a>
+        <a href="${pageContext.request.contextPath}/histori" class="shortcut-item mb-0">
+            <div class="shortcut-item-icon"><i class="bi bi-clock-history"></i></div>
+            <div>
+                <div class="fw-bold fs-5 mb-1">Riwayat Sesi</div>
+                <div class="small text-secondary">Lihat histori sesi lalu</div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Statistik Bawah -->
+<div class="row g-4 mt-2 mb-5">
+    <div class="col-md-4">
+        <div class="stat-box h-100">
+            <div class="stat-label text-primary" style="color: var(--humana-navy) !important;">KEPUASAN SISWA</div>
+            <div class="d-flex align-items-center gap-2 mt-2">
+                <div class="stat-value"><fmt:formatNumber value="${rating}" maxFractionDigits="1" minFractionDigits="1"/>/5.0</div>
+                <div class="text-warning fs-5 ms-2">
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-fill"></i>
+                    <i class="bi bi-star-half"></i>
                 </div>
-            </c:forEach>
-        </c:otherwise>
-    </c:choose>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-box h-100">
+            <div class="stat-label">TOTAL SESI SELESAI</div>
+            <div class="d-flex align-items-center gap-2 mt-2">
+                <div class="stat-value">${sesiSelesai} Sesi</div>
+                <span class="badge bg-success rounded-pill ms-2">+12%</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-box h-100">
+            <div class="stat-label">PERMINTAAN MASUK</div>
+            <div class="stat-value mt-2">${permintaanMasuk}</div>
+        </div>
+    </div>
 </div>
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp" />
