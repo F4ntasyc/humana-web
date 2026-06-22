@@ -37,7 +37,7 @@ public class GuruDAO {
     // ======== CRUD Operations ========
 
     public Guru findById(int id) {
-        String sql = "SELECT * FROM guru WHERE id_guru = ?";
+        String sql = "SELECT * FROM Guru WHERE id_guru = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -54,7 +54,7 @@ public class GuruDAO {
     }
 
     public Guru findByEmail(String email) {
-        String sql = "SELECT * FROM guru WHERE email_guru = ?";
+        String sql = "SELECT * FROM Guru WHERE email_guru = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -71,7 +71,7 @@ public class GuruDAO {
     }
 
     public Guru findByUsername(String username) {
-        String sql = "SELECT * FROM guru WHERE username = ?";
+        String sql = "SELECT * FROM Guru WHERE username = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -88,7 +88,7 @@ public class GuruDAO {
     }
 
     public List<Guru> findAll() {
-        String sql = "SELECT * FROM guru";
+        String sql = "SELECT * FROM Guru";
         List<Guru> list = new ArrayList<>();
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -104,7 +104,7 @@ public class GuruDAO {
     }
 
     public boolean insert(Guru guru) {
-        String sql = "INSERT INTO guru (nama_guru, email_guru, password, no_telepon, "
+        String sql = "INSERT INTO Guru (nama_guru, email_guru, password, no_telepon, "
                    + "rating, jenis_kelamin, alamat, username, is_active) "
                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
@@ -136,7 +136,7 @@ public class GuruDAO {
     }
 
     public boolean update(Guru guru) {
-        String sql = "UPDATE guru SET nama_guru = ?, email_guru = ?, password = ?, "
+        String sql = "UPDATE Guru SET nama_guru = ?, email_guru = ?, password = ?, "
                    + "no_telepon = ?, jenis_kelamin = ?, alamat = ?, username = ?, is_active = ? "
                    + "WHERE id_guru = ?";
         try (Connection conn = DBConnection.getConnection();
@@ -160,7 +160,7 @@ public class GuruDAO {
     }
 
     public boolean updateRating(int idGuru, double rating) {
-        String sql = "UPDATE guru SET rating = ? WHERE id_guru = ?";
+        String sql = "UPDATE Guru SET rating = ? WHERE id_guru = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -175,7 +175,7 @@ public class GuruDAO {
     }
 
     public boolean delete(int id) {
-        String sql = "DELETE FROM guru WHERE id_guru = ?";
+        String sql = "DELETE FROM Guru WHERE id_guru = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 

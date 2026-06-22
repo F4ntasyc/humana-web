@@ -1,7 +1,13 @@
 # Maven
 target/
 
-# IDE
+# IDE (NetBeans)
+nbproject/private/
+nb-configuration.xml
+nbactions.xml
+build/
+
+# IDE (IntelliJ / Eclipse / VS Code)
 .idea/
 *.iml
 .vscode/settings.json

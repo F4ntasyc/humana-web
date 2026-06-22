@@ -3,6 +3,11 @@ echo ========================================================
 echo   Membangun dan Menjalankan HUMANA Web App (Tomcat 10)
 echo ========================================================
 echo.
+echo Membersihkan sisa server yang menyala di background...
+FOR /F "tokens=5" %%T IN ('netstat -a -n -o ^| findstr :8081') DO (
+    taskkill /F /PID %%T >nul 2>&1
+)
+
 echo Sedang mendownload dependensi dan melakukan build...
 echo Silakan tunggu sampai muncul tulisan "Tomcat 10.x started"
 echo.

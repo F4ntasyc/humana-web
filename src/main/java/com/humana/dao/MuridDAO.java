@@ -33,7 +33,7 @@ public class MuridDAO {
     // ======== CRUD Operations ========
 
     public Murid findById(int id) {
-        String sql = "SELECT * FROM murid WHERE id_murid = ?";
+        String sql = "SELECT * FROM Murid WHERE id_murid = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -50,7 +50,7 @@ public class MuridDAO {
     }
 
     public Murid findByEmail(String email) {
-        String sql = "SELECT * FROM murid WHERE email = ?";
+        String sql = "SELECT * FROM Murid WHERE email = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -67,7 +67,7 @@ public class MuridDAO {
     }
 
     public Murid findByUsername(String username) {
-        String sql = "SELECT * FROM murid WHERE username = ?";
+        String sql = "SELECT * FROM Murid WHERE username = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -84,7 +84,7 @@ public class MuridDAO {
     }
 
     public List<Murid> findAll() {
-        String sql = "SELECT * FROM murid";
+        String sql = "SELECT * FROM Murid";
         List<Murid> list = new ArrayList<>();
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -100,7 +100,7 @@ public class MuridDAO {
     }
 
     public boolean insert(Murid murid) {
-        String sql = "INSERT INTO murid (nama_murid, email, username, password, "
+        String sql = "INSERT INTO Murid (nama_murid, email, username, password, "
                    + "no_telepon, jenis_kelamin, alamat, kelas, jurusan) "
                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
@@ -132,7 +132,7 @@ public class MuridDAO {
     }
 
     public boolean update(Murid murid) {
-        String sql = "UPDATE murid SET nama_murid = ?, email = ?, username = ?, password = ?, "
+        String sql = "UPDATE Murid SET nama_murid = ?, email = ?, username = ?, password = ?, "
                    + "no_telepon = ?, jenis_kelamin = ?, alamat = ?, kelas = ?, jurusan = ? "
                    + "WHERE id_murid = ?";
         try (Connection conn = DBConnection.getConnection();
@@ -157,7 +157,7 @@ public class MuridDAO {
     }
 
     public boolean delete(int id) {
-        String sql = "DELETE FROM murid WHERE id_murid = ?";
+        String sql = "DELETE FROM Murid WHERE id_murid = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
