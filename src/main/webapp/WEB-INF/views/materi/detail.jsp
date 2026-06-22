@@ -54,7 +54,7 @@
 
         <c:if test="${sessionScope.userRole == 'MURID'}">
             <div class="d-flex justify-content-end border-top pt-4">
-                <a href="${pageContext.request.contextPath}/pesan?idMateri=${materi.idMateri}" class="btn btn-primary" style="border-radius: 0.75rem; padding: 0.75rem 2rem; font-weight: 600; background-color: #F97316; border: none; box-shadow: 0 4px 14px 0 rgba(249, 115, 22, 0.39);">
+                <a href="${pageContext.request.contextPath}/pesan?idMateri=${materi.idMateri}" class="btn btn-primary" style="border-radius: 0.75rem; padding: 0.75rem 2rem; font-weight: 600; background-color: var(--humana-teal); border: none; box-shadow: 0 4px 14px 0 rgba(58, 125, 107, 0.35);">
                     <i class="bi bi-calendar-plus me-2"></i> Pesan Sesi dengan Materi Ini
                 </a>
             </div>

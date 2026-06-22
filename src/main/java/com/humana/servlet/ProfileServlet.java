@@ -213,7 +213,7 @@ public class ProfileServlet extends HttpServlet {
 
         int userId = (int) session.getAttribute("userId");
         String kelasStr = req.getParameter("kelas");
-        String jurusan = req.getParameter("jurusan");
+        String jenjang = req.getParameter("jenjang"); // SD, SMP, atau SMA — disimpan ke kolom jurusan
 
         try {
             int kelas = 0;
@@ -221,11 +221,12 @@ public class ProfileServlet extends HttpServlet {
                 kelas = Integer.parseInt(kelasStr.trim());
             }
 
+            // jurusan di DB dipakai untuk menyimpan jenjang (SD/SMP/SMA)
             String sql = "UPDATE Murid SET kelas = ?, jurusan = ? WHERE id_murid = ?";
             try (Connection conn = DBConnection.getConnection();
                  PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setInt(1, kelas);
-                stmt.setString(2, jurusan);
+                stmt.setString(2, jenjang != null ? jenjang.trim() : "");
                 stmt.setInt(3, userId);
                 stmt.executeUpdate();
             }

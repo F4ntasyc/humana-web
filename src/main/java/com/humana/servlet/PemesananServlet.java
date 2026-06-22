@@ -134,8 +134,9 @@ public class PemesananServlet extends HttpServlet {
             }
 
             long menit = Duration.between(mulai, selesai).toMinutes();
-            // Estimasi hitungan durasi jam dibulatkan ke atas, lalu kali 30000
-            int biayaSesi = (int) Math.ceil(menit / 60.0) * 30000;
+            // Rp 15.000 per 30 menit
+            int jumlahSesi = (int) Math.ceil(menit / 30.0);
+            int biayaSesi = jumlahSesi * 15000;
 
             try (Connection conn = DBConnection.getConnection()) {
                 conn.setAutoCommit(false);

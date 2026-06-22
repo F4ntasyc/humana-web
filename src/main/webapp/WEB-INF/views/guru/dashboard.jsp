@@ -120,7 +120,29 @@
 <div class="dashboard-banner mb-4">
     <div class="greeting">
         <div class="title">Halo, ${sessionScope.userName}!</div>
-        <div class="subtitle">Semangat mengajar hari ini! Kamu memiliki <strong>${sesiAktif} sesi aktif</strong> dan <strong>${permintaanMasuk} permintaan baru</strong> yang menunggu persetujuan.</div>
+        <div class="row g-3 mt-3" style="position:relative; z-index:10;">
+            <div class="col-4">
+                <div style="background:white; border:none; border-radius:12px; padding:1rem 1.25rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                    <div style="font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#64748B; margin-bottom:0.4rem;">KEPUASAN SISWA</div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span style="font-size:1.6rem; font-weight:700; color:#1E293B;"><fmt:formatNumber value="${rating}" maxFractionDigits="1" minFractionDigits="1"/>/5.0</span>
+                        <i class="bi bi-star-fill" style="color:#FBBF24; font-size:1.1rem;"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div style="background:white; border:none; border-radius:12px; padding:1rem 1.25rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                    <div style="font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#64748B; margin-bottom:0.4rem;">SESI AKTIF</div>
+                    <div style="font-size:1.6rem; font-weight:700; color:#1E293B;">${sesiAktif} <span style="font-size:0.9rem; font-weight:400; color:#64748B;">sesi</span></div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div style="background:white; border:none; border-radius:12px; padding:1rem 1.25rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                    <div style="font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#64748B; margin-bottom:0.4rem;">PERMINTAAN MASUK</div>
+                    <div style="font-size:1.6rem; font-weight:700; color:#1E293B;">${permintaanMasuk}</div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -130,7 +152,7 @@
         <div class="glass-panel h-100">
             <div class="section-title">
                 Permintaan Baru
-                <a href="${pageContext.request.contextPath}/jadwal" class="fs-6 fw-semibold text-decoration-none" style="color: var(--humana-teal);">Lihat Semua</a>
+                <a href="${pageContext.request.contextPath}/jadwal?tab=permintaan" class="fs-6 fw-semibold text-decoration-none" style="color: var(--humana-teal);">Lihat Semua</a>
             </div>
             
             <div class="row g-3">
@@ -163,7 +185,7 @@
                                             <div class="fw-bold text-warning small">Menunggu</div>
                                         </div>
                                     </div>
-                                    <a href="${pageContext.request.contextPath}/jadwal" class="btn btn-dark w-100 rounded-pill fw-semibold" style="background: var(--humana-navy); border: none;">Lihat Detail</a>
+                                    <a href="${pageContext.request.contextPath}/jadwal?tab=permintaan" class="btn btn-dark w-100 rounded-pill fw-semibold" style="background: var(--humana-navy); border: none;">Lihat Detail</a>
                                 </div>
                             </div>
                         </c:forEach>
@@ -196,40 +218,6 @@
                 <div class="small text-secondary">Lihat histori sesi lalu</div>
             </div>
         </a>
-    </div>
-</div>
-
-<!-- Statistik Bawah -->
-<div class="row g-4 mt-2 mb-5">
-    <div class="col-md-4">
-        <div class="stat-box h-100">
-            <div class="stat-label text-primary" style="color: var(--humana-navy) !important;">KEPUASAN SISWA</div>
-            <div class="d-flex align-items-center gap-2 mt-2">
-                <div class="stat-value"><fmt:formatNumber value="${rating}" maxFractionDigits="1" minFractionDigits="1"/>/5.0</div>
-                <div class="text-warning fs-5 ms-2">
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-half"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="stat-box h-100">
-            <div class="stat-label">TOTAL SESI SELESAI</div>
-            <div class="d-flex align-items-center gap-2 mt-2">
-                <div class="stat-value">${sesiSelesai} Sesi</div>
-                <span class="badge bg-success rounded-pill ms-2">+12%</span>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="stat-box h-100">
-            <div class="stat-label">PERMINTAAN MASUK</div>
-            <div class="stat-value mt-2">${permintaanMasuk}</div>
-        </div>
     </div>
 </div>
 

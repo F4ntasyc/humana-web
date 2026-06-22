@@ -33,6 +33,9 @@
                         <c:if test="${sessionScope.userRole == 'MURID'}">
                             <th class="pe-4 py-3 text-secondary" style="font-weight: 600;">Aksi</th>
                         </c:if>
+                        <c:if test="${sessionScope.userRole == 'GURU'}">
+                            <th class="pe-4 py-3 text-secondary" style="font-weight: 600;">Rating</th>
+                        </c:if>
                     </tr>
                 </thead>
                 <tbody>
@@ -84,6 +87,23 @@
                                                         </c:forEach>
                                                     </div>
                                                 </c:when>
+                                            </c:choose>
+                                        </td>
+                                    </c:if>
+                                    <c:if test="${sessionScope.userRole == 'GURU'}">
+                                        <td class="pe-4">
+                                            <c:choose>
+                                                <c:when test="${not empty h.rating}">
+                                                    <div class="text-warning">
+                                                        <c:forEach begin="1" end="5" var="i">
+                                                            <i class="bi ${i <= h.rating ? 'bi-star-fill' : 'bi-star'}"></i>
+                                                        </c:forEach>
+                                                        <span class="text-dark ms-1" style="font-size:0.85rem;">(${h.rating}/5)</span>
+                                                    </div>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <span class="text-muted" style="font-size:0.85rem;">Belum ada</span>
+                                                </c:otherwise>
                                             </c:choose>
                                         </td>
                                     </c:if>

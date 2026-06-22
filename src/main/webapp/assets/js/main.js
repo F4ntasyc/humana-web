@@ -1,4 +1,22 @@
 /**
+ * Submit POST form secara dinamis (dipakai di jadwal-aktif.jsp)
+ */
+function submitForm(url, params) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = url;
+    Object.entries(params).forEach(([key, value]) => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = value;
+        form.appendChild(input);
+    });
+    document.body.appendChild(form);
+    form.submit();
+}
+
+/**
  * Format angka ke mata uang Rupiah
  * @param {number|string} angka 
  * @returns {string} format RpXXX.XXX
@@ -12,44 +30,6 @@ function formatRupiah(angka) {
         currency: 'IDR', 
         minimumFractionDigits: 0 
     }).format(val);
-}
-
-/**
- * Hitung estimasi biaya sesi (dipakai di pesan.jsp)
- * Durasi menit di-ceil ke kelipatan 1 jam (60 mnt), lalu dikali 30.000
- */
-function hitungEstimasiBiaya() {
-    const elMulai = document.getElementById('waktuMulai');
-    const elSelesai = document.getElementById('waktuSelesai');
-    const elEstimasi = document.getElementById('estimasiBiayaSesi');
-    
-    if (!elMulai || !elSelesai || !elEstimasi) return;
-    
-    const waktuMulaiStr = elMulai.value;
-    const waktuSelesaiStr = elSelesai.value;
-
-    if (waktuMulaiStr && waktuSelesaiStr) {
-        const mulai = new Date(waktuMulaiStr);
-        const selesai = new Date(waktuSelesaiStr);
-
-        if (selesai > mulai) {
-            const diffMs = selesai - mulai;
-            const diffMenit = Math.floor(diffMs / 60000);
-            const biayaSesi = Math.ceil(diffMenit / 60.0) * 30000;
-            
-            elEstimasi.textContent = formatRupiah(biayaSesi);
-            elEstimasi.classList.remove('text-danger');
-            elEstimasi.classList.add('text-primary');
-        } else {
-            elEstimasi.textContent = "Error: Waktu selesai harus setelah waktu mulai";
-            elEstimasi.classList.remove('text-primary');
-            elEstimasi.classList.add('text-danger');
-        }
-    } else {
-        elEstimasi.textContent = "Rp0";
-        elEstimasi.classList.remove('text-danger');
-        elEstimasi.classList.add('text-primary');
-    }
 }
 
 /**

@@ -363,29 +363,55 @@
 
 <%-- Profile Hero Card --%>
 <div class="profile-hero">
-    <div class="profile-hero-inner">
-        <div class="profile-avatar" id="profileAvatar"></div>
-        <div class="profile-info">
-            <h2 id="profileName">${displayName}</h2>
-            <div>
-                <c:choose>
-                    <c:when test="${sessionScope.userRole == 'GURU'}">
-                        <span class="profile-badge badge-guru"><i class="bi bi-person-workspace"></i> Guru</span>
-                    </c:when>
-                    <c:otherwise>
-                        <span class="profile-badge badge-murid"><i class="bi bi-mortarboard"></i> Murid</span>
-                    </c:otherwise>
-                </c:choose>
-            </div>
-            <div class="profile-email"><i class="bi bi-envelope me-1"></i>${displayEmail}</div>
-
-            <%-- Rating bintang (GURU only) --%>
-            <c:if test="${sessionScope.userRole == 'GURU'}">
-                <div class="rating-stars" id="ratingStars">
-                    <span class="rating-value" id="ratingValue"></span>
+    <div class="profile-hero-inner" style="justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
+        <div style="display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap;">
+            <div class="profile-avatar" id="profileAvatar"></div>
+            <div class="profile-info">
+                <h2 id="profileName">${displayName}</h2>
+                <div>
+                    <c:choose>
+                        <c:when test="${sessionScope.userRole == 'GURU'}">
+                            <span class="profile-badge badge-guru"><i class="bi bi-person-workspace"></i> Guru</span>
+                        </c:when>
+                        <c:otherwise>
+                            <span class="profile-badge badge-murid"><i class="bi bi-mortarboard"></i> Murid</span>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
-            </c:if>
+                <div class="profile-email"><i class="bi bi-envelope me-1"></i>${displayEmail}</div>
+
+                <%-- Rating bintang (GURU only) --%>
+                <c:if test="${sessionScope.userRole == 'GURU'}">
+                    <div class="rating-stars" id="ratingStars">
+                        <span class="rating-value" id="ratingValue"></span>
+                    </div>
+                </c:if>
+            </div>
         </div>
+
+        <%-- Ketersediaan toggle (GURU only, kanan, tanpa tombol simpan) --%>
+        <c:if test="${sessionScope.userRole == 'GURU'}">
+            <form method="post" action="${pageContext.request.contextPath}/profile/update-availability" id="formAvailabilityHero">
+                <div style="background:#ffffff; border:1px solid #E2E8F0; border-radius:1rem; padding:1rem 1.5rem; min-width:260px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                    <div style="font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#64748B; margin-bottom:0.6rem;">Status Ketersediaan</div>
+                    <div class="toggle-container" style="background:transparent; border:none; padding:0; gap:0.75rem;">
+                        <label class="toggle-switch" style="flex-shrink:0;">
+                            <input type="checkbox" id="isActiveToggle" ${guru.active ? 'checked' : ''}>
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <div class="toggle-label">
+                            <div class="toggle-title" id="toggleTitle" style="color:#1E293B; font-weight:600; font-size:0.9rem;">
+                                ${guru.active ? 'Aktif' : 'Nonaktif'}
+                            </div>
+                            <div class="toggle-desc" id="toggleDesc" style="color:#64748B; font-size:0.78rem;">
+                                ${guru.active ? 'Menerima permintaan murid' : 'Tidak menerima permintaan'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" name="isActive" id="isActiveInput" value="${guru.active ? '1' : '0'}">
+            </form>
+        </c:if>
     </div>
 </div>
 
@@ -394,28 +420,21 @@
     <ul class="nav-tabs-custom" role="tablist">
         <li>
             <button class="nav-tab-link active" data-tab="tab-basic" role="tab" id="tabBtnBasic">
-                <i class="bi bi-person"></i> Informasi Dasar
+                <i class="bi bi-person"></i> Data Pribadi
             </button>
         </li>
         <c:if test="${sessionScope.userRole == 'MURID'}">
             <li>
                 <button class="nav-tab-link" data-tab="tab-academic" role="tab" id="tabBtnAcademic">
-                    <i class="bi bi-book"></i> Akademik
-                </button>
-            </li>
-        </c:if>
-        <c:if test="${sessionScope.userRole == 'GURU'}">
-            <li>
-                <button class="nav-tab-link" data-tab="tab-availability" role="tab" id="tabBtnAvailability">
-                    <i class="bi bi-calendar-check"></i> Ketersediaan
+                    <i class="bi bi-book"></i> Informasi Akademik
                 </button>
             </li>
         </c:if>
     </ul>
 
-    <%-- ===== TAB 1: Informasi Dasar ===== --%>
+    <%-- ===== TAB 1: Data Pribadi ===== --%>
     <div class="tab-panel active" id="tab-basic" role="tabpanel">
-        <h3 class="form-section-title"><i class="bi bi-pencil-square me-2"></i>Edit Informasi Dasar</h3>
+        <h3 class="form-section-title"><i class="bi bi-pencil-square me-2"></i>Edit Data Pribadi</h3>
 
         <form method="post" action="${pageContext.request.contextPath}/profile/update-basic" id="formBasic">
             <div class="form-row">
@@ -464,20 +483,30 @@
     <%-- ===== TAB 2: Akademik (MURID only) ===== --%>
     <c:if test="${sessionScope.userRole == 'MURID'}">
         <div class="tab-panel" id="tab-academic" role="tabpanel">
-            <h3 class="form-section-title"><i class="bi bi-book me-2"></i>Edit Data Akademik</h3>
+            <h3 class="form-section-title"><i class="bi bi-book me-2"></i>Informasi Akademik</h3>
 
             <form method="post" action="${pageContext.request.contextPath}/profile/update-academic" id="formAcademic">
                 <div class="form-row">
                     <div class="form-group-profile">
-                        <label for="kelas">Kelas</label>
-                        <input type="number" class="form-input" id="kelas" name="kelas"
-                               min="1" max="12" value="${murid.kelas > 0 ? murid.kelas : ''}"
-                               placeholder="1 - 12">
+                        <label for="jenjang">Jenjang</label>
+                        <select class="form-input form-select-profile" id="jenjang" name="jenjang" onchange="updateKelasRange()">
+                            <option value="">-- Pilih Jenjang --</option>
+                            <option value="SD" ${murid.jurusan == 'SD' ? 'selected' : ''}>SD (Sekolah Dasar)</option>
+                            <option value="SMP" ${murid.jurusan == 'SMP' ? 'selected' : ''}>SMP (Sekolah Menengah Pertama)</option>
+                            <option value="SMA" ${murid.jurusan == 'SMA' ? 'selected' : ''}>SMA (Sekolah Menengah Atas)</option>
+                        </select>
                     </div>
                     <div class="form-group-profile">
-                        <label for="jurusan">Jurusan</label>
-                        <input type="text" class="form-input" id="jurusan" name="jurusan"
-                               value="${murid.jurusan}" placeholder="Contoh: IPA, IPS, dll.">
+                        <label for="kelas">Kelas</label>
+                        <select class="form-input form-select-profile" id="kelas" name="kelas">
+                            <option value="">-- Pilih kelas --</option>
+                            <c:forEach begin="1" end="12" var="k">
+                                <option value="${k}" ${murid.kelas == k ? 'selected' : ''}>${k}</option>
+                            </c:forEach>
+                        </select>
+                        <div id="kelasWarning" style="display:none; color:#DC2626; font-size:0.75rem; margin-top:0.3rem;">
+                            <i class="bi bi-exclamation-triangle me-1"></i>Kelas tidak sesuai dengan jenjang yang dipilih.
+                        </div>
                     </div>
                 </div>
 
@@ -488,40 +517,7 @@
         </div>
     </c:if>
 
-    <%-- ===== TAB 3: Ketersediaan (GURU only) ===== --%>
-    <c:if test="${sessionScope.userRole == 'GURU'}">
-        <div class="tab-panel" id="tab-availability" role="tabpanel">
-            <h3 class="form-section-title"><i class="bi bi-calendar-check me-2"></i>Status Ketersediaan</h3>
-
-            <form method="post" action="${pageContext.request.contextPath}/profile/update-availability" id="formAvailability">
-                <div class="toggle-container">
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="isActiveToggle"
-                               ${guru.active ? 'checked' : ''}>
-                        <span class="toggle-slider"></span>
-                    </label>
-                    <div class="toggle-label">
-                        <div class="toggle-title" id="toggleTitle">
-                            ${guru.active ? 'Aktif menerima murid' : 'Tidak menerima murid'}
-                        </div>
-                        <div class="toggle-desc" id="toggleDesc">
-                            ${guru.active
-                                ? 'Profil Anda akan tampil di daftar guru yang tersedia.'
-                                : 'Profil Anda tidak akan tampil di pencarian murid.'}
-                        </div>
-                    </div>
-                </div>
-
-                <%-- Hidden input yang akan di-set via JS --%>
-                <input type="hidden" name="isActive" id="isActiveInput"
-                       value="${guru.active ? '1' : '0'}">
-
-                <button type="submit" class="btn-save" id="btnSaveAvailability">
-                    <i class="bi bi-check-lg me-1"></i> Simpan Perubahan
-                </button>
-            </form>
-        </div>
-    </c:if>
+    <%-- Tab ketersediaan GURU sudah dipindah ke hero card, section ini dihapus --%>
 </div>
 
 <script>
@@ -577,19 +573,42 @@
         });
     });
 
-    // ===== Toggle Switch (Guru Availability) =====
+    // ===== Toggle Switch (Guru Availability) — auto submit =====
     var toggleCheckbox = document.getElementById('isActiveToggle');
     if (toggleCheckbox) {
         toggleCheckbox.addEventListener('change', function() {
             var isActive = this.checked;
             document.getElementById('isActiveInput').value = isActive ? '1' : '0';
-            document.getElementById('toggleTitle').textContent =
-                isActive ? 'Aktif menerima murid' : 'Tidak menerima murid';
-            document.getElementById('toggleDesc').textContent =
-                isActive
-                    ? 'Profil Anda akan tampil di daftar guru yang tersedia.'
-                    : 'Profil Anda tidak akan tampil di pencarian murid.';
+            document.getElementById('toggleTitle').textContent = isActive ? 'Aktif' : 'Nonaktif';
+            document.getElementById('toggleDesc').textContent = isActive
+                ? 'Menerima permintaan murid'
+                : 'Tidak menerima permintaan';
+            // Auto-submit
+            document.getElementById('formAvailabilityHero').submit();
         });
+    }
+    function updateKelasRange() {
+        var jenjang = document.getElementById('jenjang');
+        var kelas = document.getElementById('kelas');
+        var warning = document.getElementById('kelasWarning');
+        if (!jenjang || !kelas || !warning) return;
+
+        var kelasVal = parseInt(kelas.value);
+        var j = jenjang.value;
+        var valid = true;
+
+        if (j === 'SD' && (kelasVal < 1 || kelasVal > 6)) valid = false;
+        else if (j === 'SMP' && (kelasVal < 7 || kelasVal > 9)) valid = false;
+        else if (j === 'SMA' && (kelasVal < 10 || kelasVal > 12)) valid = false;
+
+        warning.style.display = (!valid && j && kelas.value) ? 'block' : 'none';
+    }
+
+    // Init validasi kelas saat halaman load
+    var kelasEl = document.getElementById('kelas');
+    if (kelasEl) {
+        kelasEl.addEventListener('change', updateKelasRange);
+        updateKelasRange();
     }
 
     // ===== Auto-dismiss alerts =====

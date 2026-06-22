@@ -10,10 +10,13 @@
     .dashboard-banner {
         background-color: var(--humana-navy);
         border-radius: 24px;
-        padding: 3rem 3rem 10rem 3rem;
+        padding: 2rem 2rem 3.5rem 2rem;
         position: relative;
-        margin-bottom: 7rem;
-        overflow: visible; /* Changed from hidden so the banner card can pop out */
+        margin-bottom: 2rem;
+        overflow: visible;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
     }
     .dashboard-banner::before {
         content: '';
@@ -55,19 +58,18 @@
     }
     
     .banner-card {
-        position: absolute;
-        bottom: -5rem;
-        left: 3rem;
-        right: 3rem;
+        position: relative;
         background: white;
         border-radius: 16px;
-        padding: 2.5rem;
+        padding: 1rem 1.25rem;
         box-shadow: 0 15px 35px rgba(0,0,0,0.08);
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        align-items: flex-start;
         z-index: 20;
         border: 1px solid #E2E8F0;
+        margin-top: 1rem;
+        margin-bottom: -5rem;
     }
     .banner-card-label {
         font-size: 0.75rem;
@@ -75,7 +77,7 @@
         color: #64748B;
         text-transform: uppercase;
         letter-spacing: 1px;
-        margin-bottom: 1rem;
+        margin-bottom: 0.2rem;
     }
     
     .shortcut-card {
@@ -143,18 +145,28 @@
     
     <div class="banner-card">
         <div class="w-100">
-            <div class="banner-card-label">Sesi Terdekat</div>
+            <div class="banner-card-label">SESI TERDEKAT</div>
             <c:choose>
                 <c:when test="${not empty jadwalTerdekat}">
-                    <h3 class="fw-bold text-dark mb-4">${jadwalTerdekat.namaMateri}</h3>
-                    <div class="row">
-                        <div class="col-6 border-end">
-                            <div class="text-secondary small fw-semibold mb-1">WAKTU</div>
-                            <div class="fw-bold text-dark fs-6"><fmt:formatDate value="${jadwalTerdekat.waktuMulai}" pattern="dd MMM yyyy, HH:mm" /></div>
+                    <h3 class="fw-bold mb-2" style="color:#1E293B; font-size:1.4rem;">${jadwalTerdekat.namaMateri}</h3>
+                    <div class="row g-2">
+                        <div class="col-sm-6">
+                            <div class="text-secondary" style="font-size:0.7rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:0.3rem;">WAKTU</div>
+                            <div class="fw-bold text-dark" style="font-size:0.95rem;">
+                                <fmt:formatDate value="${jadwalTerdekat.waktuMulai}" pattern="dd MMM yyyy" />
+                            </div>
+                            <div class="text-secondary" style="font-size:0.875rem;">
+                                <i class="bi bi-clock me-1"></i>
+                                <fmt:formatDate value="${jadwalTerdekat.waktuMulai}" pattern="HH:mm" /> &ndash; <fmt:formatDate value="${jadwalTerdekat.waktuSelesai}" pattern="HH:mm" /> WIB
+                            </div>
                         </div>
-                        <div class="col-6 ps-4">
-                            <div class="text-secondary small fw-semibold mb-1">GURU</div>
-                            <div class="fw-bold text-dark fs-6">${empty jadwalTerdekat.namaGuru ? '<span class="fst-italic text-muted fw-normal">Menunggu Konfirmasi</span>' : jadwalTerdekat.namaGuru}</div>
+                        <div class="col-sm-6" style="border-left: 1px solid #E2E8F0; padding-left: 1.5rem;">
+                            <div class="text-secondary" style="font-size:0.7rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:0.3rem;">GURU</div>
+                            <div class="fw-bold" style="font-size:0.95rem; color:#1E293B;">
+                                ${empty jadwalTerdekat.namaGuru
+                                    ? '<span class="fst-italic fw-normal" style="color:#94A3B8;">Menunggu Konfirmasi</span>'
+                                    : jadwalTerdekat.namaGuru}
+                            </div>
                         </div>
                     </div>
                 </c:when>

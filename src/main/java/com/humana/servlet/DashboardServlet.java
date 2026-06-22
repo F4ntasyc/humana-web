@@ -72,7 +72,7 @@ public class DashboardServlet extends HttpServlet {
                 }
             }
 
-            String sqlJadwalTerdekat = "SELECT p.id_pemesanan, p.status_pemesanan, p.waktu_mulai, " +
+            String sqlJadwalTerdekat = "SELECT p.id_pemesanan, p.status_pemesanan, p.waktu_mulai, p.waktu_selesai, " +
                                        "m.nama_materi, guru.nama_guru " +
                                        "FROM Pemesanan p " +
                                        "JOIN Materi m ON m.id_materi = p.id_materi " +
@@ -87,6 +87,7 @@ public class DashboardServlet extends HttpServlet {
                         jt.idPemesanan = rs.getInt("id_pemesanan");
                         jt.statusPemesanan = rs.getString("status_pemesanan");
                         jt.waktuMulai = rs.getTimestamp("waktu_mulai");
+                        jt.waktuSelesai = rs.getTimestamp("waktu_selesai");
                         jt.namaMateri = rs.getString("nama_materi");
                         jt.namaGuru = rs.getString("nama_guru");
                         req.setAttribute("jadwalTerdekat", jt);
@@ -121,7 +122,7 @@ public class DashboardServlet extends HttpServlet {
                 }
             }
 
-            String sqlCountAktif = "SELECT COUNT(*) FROM Pemesanan WHERE id_guru = ? AND status_pemesanan IN ('dikonfirmasi','berlangsung')";
+            String sqlCountAktif = "SELECT COUNT(*) FROM Pemesanan WHERE id_guru = ? AND status_pemesanan = 'dikonfirmasi'";
             try (PreparedStatement stmt = conn.prepareStatement(sqlCountAktif)) {
                 stmt.setInt(1, userId);
                 try (ResultSet rs = stmt.executeQuery()) {
@@ -181,12 +182,14 @@ public class DashboardServlet extends HttpServlet {
         public int idPemesanan;
         public String statusPemesanan;
         public java.sql.Timestamp waktuMulai;
+        public java.sql.Timestamp waktuSelesai;
         public String namaMateri;
         public String namaGuru;
 
         public int getIdPemesanan() { return idPemesanan; }
         public String getStatusPemesanan() { return statusPemesanan; }
         public java.sql.Timestamp getWaktuMulai() { return waktuMulai; }
+        public java.sql.Timestamp getWaktuSelesai() { return waktuSelesai; }
         public String getNamaMateri() { return namaMateri; }
         public String getNamaGuru() { return namaGuru; }
     }

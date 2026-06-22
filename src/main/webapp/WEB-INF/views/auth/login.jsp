@@ -493,10 +493,10 @@
 
                 <form method="post" action="${pageContext.request.contextPath}/auth/login" id="loginForm">
                     <div class="input-group">
-                        <label for="email">Alamat Email</label>
+                        <label for="email">Alamat Email atau Username</label>
                         <div class="input-wrapper">
-                            <input type="text" id="email" name="email" class="glass-input" placeholder="Masukkan email Anda" required autocomplete="email">
-                            <i class="bi bi-envelope icon-left"></i>
+                            <input type="text" id="email" name="email" class="glass-input" placeholder="Email atau username Anda" required autocomplete="username">
+                            <i class="bi bi-person icon-left"></i>
                         </div>
                     </div>
 

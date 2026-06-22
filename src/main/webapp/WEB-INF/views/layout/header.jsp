@@ -153,7 +153,7 @@
             </a>
         </div>
         
-        <div class="sidebar-subtitle mb-2">Menu Utama</div>
+        <div class="sidebar-subtitle mb-2" style="margin-top: 1.5rem;">Menu Utama</div>
         <div class="nav-menu">
             <c:choose>
                 <c:when test="${sessionScope.userRole == 'MURID'}">
