@@ -245,12 +245,12 @@
             color: #64748B;
         }
         .card-subtitle a {
-            color: var(--brand-navy);
+            color: var(--brand-accent);
             font-weight: 600;
             text-decoration: none;
             transition: color 0.3s;
         }
-        .card-subtitle a:hover { color: var(--brand-accent); text-decoration: underline; }
+        .card-subtitle a:hover { color: var(--brand-navy); text-decoration: underline; }
 
         /* Form Controls */
         .input-group { margin-bottom: 0.75rem; }
@@ -330,7 +330,7 @@
         /* Buttons */
         .btn-primary {
             width: 100%;
-            background: var(--brand-navy);
+            background: var(--brand-accent);
             color: #FFFFFF;
             border: none;
             padding: 0.7rem;
@@ -341,11 +341,11 @@
             cursor: pointer;
             transition: all 0.3s;
             display: flex; justify-content: center; align-items: center; gap: 0.5rem;
-            box-shadow: 0 4px 12px rgba(43, 76, 126, 0.3);
+            box-shadow: 0 4px 12px rgba(58, 125, 107, 0.3);
         }
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(43, 76, 126, 0.4);
+            box-shadow: 0 8px 20px rgba(58, 125, 107, 0.4);
         }
 
         .btn-social {
