@@ -12,7 +12,7 @@
         border-radius: 24px;
         padding: 2rem 2rem 3.5rem 2rem;
         position: relative;
-        margin-bottom: 2rem;
+        margin-bottom: 6rem;
         overflow: visible;
         display: flex;
         flex-direction: column;
@@ -148,7 +148,7 @@
             <div class="banner-card-label">SESI TERDEKAT</div>
             <c:choose>
                 <c:when test="${not empty jadwalTerdekat}">
-                    <h3 class="fw-bold mb-2" style="color:#1E293B; font-size:1.4rem;">${jadwalTerdekat.namaMateri}</h3>
+                    <h3 class="fw-bold mb-4" style="color:#1E293B; font-size:1.4rem;">${jadwalTerdekat.namaMateri}</h3>
                     <div class="row g-2">
                         <div class="col-sm-6">
                             <div class="text-secondary" style="font-size:0.7rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:0.3rem;">WAKTU</div>
