@@ -110,17 +110,28 @@
 <%-- ===== SHARED CARD RENDERING (JS-based filter) ===== --%>
 <%-- Semua card dirender via JS dari data JSON --%>
 
+<div id="debug-error" style="display:none; margin-top:20px; padding:15px; background:#fee2e2; color:#991b1b; border:1px solid #f87171; border-radius:8px; font-family:monospace; white-space:pre-wrap;"></div>
 <script id="jadwal-data" type="application/json">${empty daftarJadwalJson ? '[]' : daftarJadwalJson}</script>
 <script>
     var jadwalData = [];
     try {
-        jadwalData = JSON.parse(document.getElementById('jadwal-data').textContent || '[]');
+        var rawJson = document.getElementById('jadwal-data').textContent || '[]';
+        jadwalData = JSON.parse(rawJson);
     } catch (e) {
-        console.error('Gagal parse data jadwal:', e);
+        document.getElementById('debug-error').style.display = 'block';
+        document.getElementById('debug-error').textContent = 'JSON Parse Error: ' + e.message + '\n\nRaw JSON: ' + document.getElementById('jadwal-data').textContent;
         jadwalData = [];
     }
 
     var userRole = '${sessionScope.userRole}';
+    
+    // Catch all global Javascript errors
+    window.addEventListener('error', function(e) {
+        var errDiv = document.getElementById('debug-error');
+        errDiv.style.display = 'block';
+        errDiv.textContent += '\nJS Error: ' + e.message + ' at ' + e.filename + ':' + e.lineno;
+    });
+
     var ctx = '${pageContext.request.contextPath}';
 
     function formatTanggal(dtStr) {
@@ -259,6 +270,23 @@
         }
     }
 
+    function submitForm(actionPath, params) {
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = actionPath;
+        for (var key in params) {
+            if (params.hasOwnProperty(key)) {
+                var hiddenField = document.createElement('input');
+                hiddenField.type = 'hidden';
+                hiddenField.name = key;
+                hiddenField.value = params[key];
+                form.appendChild(hiddenField);
+            }
+        }
+        document.body.appendChild(form);
+        form.submit();
+    }
+
     function switchTab(tabId, btn) {
         document.querySelectorAll('.jadwal-tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-content-panel').forEach(p => p.classList.remove('active'));
@@ -284,27 +312,28 @@
         var modal = new bootstrap.Modal(document.getElementById('konfirmasiModal'));
         modal.show();
     }
-    
-    document.getElementById('btnKonfirmasiYa').addEventListener('click', function() {
-        if (confirmActionCallback) {
-            confirmActionCallback();
-        }
-        var modalEl = document.getElementById('konfirmasiModal');
-        var modal = bootstrap.Modal.getInstance(modalEl);
-        if (modal) {
-            modal.hide();
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('btnKonfirmasiYa').addEventListener('click', function() {
+            if (confirmActionCallback) {
+                confirmActionCallback();
+            }
+            var modalEl = document.getElementById('konfirmasiModal');
+            var modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) {
+                modal.hide();
+            }
+        });
+
+        // Init
+        populatePanels();
+
+        // Handle tab param from URL
+        var urlTab = new URLSearchParams(window.location.search).get('tab');
+        if (urlTab) {
+            var tabBtn = document.querySelector('[onclick*="' + urlTab + '"]');
+            if (tabBtn) switchTab(urlTab, tabBtn);
         }
     });
-
-    // Init
-    populatePanels();
-
-    // Handle tab param from URL
-    var urlTab = new URLSearchParams(window.location.search).get('tab');
-    if (urlTab) {
-        var tabBtn = document.querySelector('[onclick*="' + urlTab + '"]');
-        if (tabBtn) switchTab(urlTab, tabBtn);
-    }
 </script>
 
 <!-- Modal Konfirmasi -->

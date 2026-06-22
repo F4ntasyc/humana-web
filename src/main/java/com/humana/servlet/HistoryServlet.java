@@ -71,6 +71,17 @@ public class HistoryServlet extends HttpServlet {
         }
     }
 
+    private String escapeJson(String str) {
+        if (str == null) return "";
+        return str.replace("\\", "\\\\")
+                  .replace("\"", "\\\"")
+                  .replace("\b", "\\b")
+                  .replace("\f", "\\f")
+                  .replace("\n", "\\n")
+                  .replace("\r", "\\r")
+                  .replace("\t", "\\t");
+    }
+
     private void tampilkanJadwal(HttpServletRequest req, HttpServletResponse resp, HttpSession session)
             throws ServletException, IOException {
         int userId = (int) session.getAttribute("userId");
@@ -140,14 +151,14 @@ public class HistoryServlet extends HttpServlet {
                     if (!first) json.append(",");
                     json.append("{")
                         .append("\"idPemesanan\":").append(dto.idPemesanan).append(",")
-                        .append("\"status\":\"").append(dto.statusPemesanan).append("\",")
+                        .append("\"status\":\"").append(escapeJson(dto.statusPemesanan)).append("\",")
                         .append("\"waktuMulai\":\"").append(dto.waktuMulai).append("\",")
                         .append("\"waktuSelesai\":\"").append(dto.waktuSelesai).append("\",")
-                        .append("\"lokasiSesi\":\"").append(dto.lokasiSesi == null ? "" : dto.lokasiSesi.replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r")).append("\",")
-                        .append("\"namaMateri\":\"").append(dto.namaMateri == null ? "" : dto.namaMateri.replace("\"", "\\\"")).append("\",")
-                        .append("\"namaMapel\":\"").append(dto.namaMapel == null ? "" : dto.namaMapel.replace("\"", "\\\"")).append("\",")
-                        .append("\"namaMurid\":\"").append(dto.namaMurid == null ? "" : dto.namaMurid.replace("\"", "\\\"")).append("\",")
-                        .append("\"namaGuru\":").append(dto.namaGuru == null ? "null" : "\"" + dto.namaGuru.replace("\"", "\\\"") + "\"")
+                        .append("\"lokasiSesi\":\"").append(escapeJson(dto.lokasiSesi)).append("\",")
+                        .append("\"namaMateri\":\"").append(escapeJson(dto.namaMateri)).append("\",")
+                        .append("\"namaMapel\":\"").append(escapeJson(dto.namaMapel)).append("\",")
+                        .append("\"namaMurid\":\"").append(escapeJson(dto.namaMurid)).append("\",")
+                        .append("\"namaGuru\":").append(dto.namaGuru == null ? "null" : "\"" + escapeJson(dto.namaGuru) + "\"")
                         .append("}");
                     first = false;
                 }
