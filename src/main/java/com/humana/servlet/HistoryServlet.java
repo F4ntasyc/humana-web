@@ -167,7 +167,7 @@ public class HistoryServlet extends HttpServlet {
                     "  (p.status_pemesanan = 'menunggu konfirmasi' AND p.id_guru IS NULL AND mg.id_guru IS NOT NULL) " +
                     "  OR p.id_guru = ? " +
                     ") " +
-                    "ORDER BY p.waktu_mulai ASC";
+                    "ORDER BY p.id_pemesanan ASC";
         }
 
         StringBuilder json = new StringBuilder("[");
