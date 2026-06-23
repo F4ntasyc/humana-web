@@ -137,8 +137,7 @@ public class HistoryServlet extends HttpServlet {
 
         String sql;
         if ("MURID".equals(userRole)) {
-            // Murid: semua status aktif milik murid ini
-            sql = "SELECT DISTINCT p.id_pemesanan, p.status_pemesanan, p.waktu_mulai, p.waktu_selesai, p.lokasi_sesi, " +
+            sql = "SELECT p.id_pemesanan, p.status_pemesanan, p.waktu_mulai, p.waktu_selesai, p.lokasi_sesi, " +
                     "m.nama_materi, mp.nama_mapel, " +
                     "murid.nama_murid, guru.nama_guru, " +
                     "bayar.biaya_sesi, bayar.biaya_jarak, bayar.nominal, bayar.status_pembayaran " +
@@ -168,7 +167,7 @@ public class HistoryServlet extends HttpServlet {
                     "  (p.status_pemesanan = 'menunggu konfirmasi' AND p.id_guru IS NULL AND mg.id_guru IS NOT NULL) " +
                     "  OR p.id_guru = ? " +
                     ") " +
-                    "ORDER BY p.waktu_mulai ASC";
+                    "ORDER BY p.id_pemesanan ASC";
         }
 
         StringBuilder json = new StringBuilder("[");
