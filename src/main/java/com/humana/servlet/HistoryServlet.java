@@ -170,7 +170,6 @@ public class HistoryServlet extends HttpServlet {
                     "ORDER BY p.id_pemesanan ASC";
         }
 
-        StringBuilder json = new StringBuilder("[");
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, userId);
@@ -178,7 +177,6 @@ public class HistoryServlet extends HttpServlet {
                 stmt.setInt(2, userId);
             }
             try (ResultSet rs = stmt.executeQuery()) {
-                boolean first = true;
                 while (rs.next()) {
                     JadwalDTO dto = new JadwalDTO();
                     dto.idPemesanan = rs.getInt("id_pemesanan");
@@ -192,31 +190,14 @@ public class HistoryServlet extends HttpServlet {
                     dto.namaGuru = rs.getString("nama_guru");
                     dto.statusPembayaran = rs.getString("status_pembayaran");
                     daftarJadwal.add(dto);
-
-                    if (!first) json.append(",");
-                    json.append("{")
-                            .append("\"idPemesanan\":").append(dto.idPemesanan).append(",")
-                            .append("\"status\":\"").append(escapeJson(dto.statusPemesanan)).append("\",")
-                            .append("\"statusPembayaran\":").append(dto.statusPembayaran == null ? "null" : "\"" + escapeJson(dto.statusPembayaran) + "\"").append(",")
-                            .append("\"waktuMulai\":\"").append(dto.waktuMulai).append("\",")
-                            .append("\"waktuSelesai\":\"").append(dto.waktuSelesai).append("\",")
-                            .append("\"lokasiSesi\":\"").append(escapeJson(dto.lokasiSesi)).append("\",")
-                            .append("\"namaMateri\":\"").append(escapeJson(dto.namaMateri)).append("\",")
-                            .append("\"namaMapel\":\"").append(escapeJson(dto.namaMapel)).append("\",")
-                            .append("\"namaMurid\":\"").append(escapeJson(dto.namaMurid)).append("\",")
-                            .append("\"namaGuru\":").append(dto.namaGuru == null ? "null" : "\"" + escapeJson(dto.namaGuru) + "\"")
-                            .append("}");
-                    first = false;
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
             req.setAttribute("error", "Gagal memuat jadwal aktif.");
         }
-        json.append("]");
 
         req.setAttribute("daftarJadwal", daftarJadwal);
-        req.setAttribute("daftarJadwalJson", json.toString());
         req.setAttribute("activePage", "jadwal");
         req.getRequestDispatcher("/WEB-INF/views/jadwal-aktif.jsp").forward(req, resp);
     }

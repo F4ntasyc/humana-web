@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
 <c:set var="pageTitle" value="Jadwal Saya" />
 <jsp:include page="/WEB-INF/views/layout/header.jsp" />
@@ -35,7 +36,6 @@
     </div>
 </c:if>
 
-<%-- ===== TABS ===== --%>
 <style>
     .jadwal-tabs { display: flex; gap: 0; border-bottom: 2px solid #E2E8F0; margin-bottom: 1.5rem; }
     .jadwal-tab-btn {
@@ -55,233 +55,123 @@
     .tab-content-panel.active { display: block; }
 </style>
 
+<%-- Helper untuk badge status --%>
+<c:set var="emptyStateHtml">
+    <div class="col-12"><div class="alert alert-info border-0" style="background:#EFF6FF;color:#1D4ED8;border-radius:0.75rem;">
+        <i class="bi bi-info-circle-fill me-2"></i>Belum ada data.
+    </div></div>
+</c:set>
+
+<%-- Calculate counts --%>
+<c:set var="countMenunggu" value="0"/>
+<c:set var="countAktif" value="0"/>
+<c:forEach items="${daftarJadwal}" var="j">
+    <c:set var="st" value="${fn:toLowerCase(j.statusPemesanan)}" />
+    <c:if test="${st == 'menunggu konfirmasi'}">
+        <c:set var="countMenunggu" value="${countMenunggu + 1}"/>
+    </c:if>
+    <c:if test="${st == 'dikonfirmasi' || st == 'berlangsung'}">
+        <c:set var="countAktif" value="${countAktif + 1}"/>
+    </c:if>
+</c:forEach>
+
 <c:choose>
     <c:when test="${sessionScope.userRole == 'MURID'}">
-        <%-- Pisahkan daftar jadwal --%>
-        <c:set var="daftarMenunggu" value="${[]}" />
-        <c:set var="daftarAktif" value="${[]}" />
-        <c:forEach items="${daftarJadwal}" var="j">
-            <c:if test="${j.statusPemesanan == 'menunggu konfirmasi'}">
-                <c:set var="daftarMenunggu" value="${daftarMenunggu}" /><%-- handled in JS --%>
-            </c:if>
-        </c:forEach>
-
-        <%-- Tab Nav --%>
         <div class="jadwal-tabs">
             <button class="jadwal-tab-btn ${empty param.tab || param.tab == 'menunggu' ? 'active' : ''}"
                     onclick="switchTab('menunggu', this)">
                 <i class="bi bi-hourglass-split"></i> Menunggu
-                <span class="badge-count" id="badgeMenunggu">0</span>
+                <span class="badge-count">${countMenunggu}</span>
             </button>
             <button class="jadwal-tab-btn ${param.tab == 'aktif' ? 'active' : ''}"
                     onclick="switchTab('aktif', this)">
                 <i class="bi bi-calendar-check"></i> Jadwal Aktif
-                <span class="badge-count" id="badgeAktif">0</span>
+                <span class="badge-count">${countAktif}</span>
             </button>
         </div>
 
         <%-- Tab: Menunggu (murid) --%>
         <div class="tab-content-panel ${empty param.tab || param.tab == 'menunggu' ? 'active' : ''}" id="panel-menunggu">
+            <div class="row g-4">
+                <c:choose>
+                    <c:when test="${countMenunggu == 0}">${emptyStateHtml}</c:when>
+                    <c:otherwise>
+                        <c:forEach items="${daftarJadwal}" var="j">
+                            <c:if test="${fn:toLowerCase(j.statusPemesanan) == 'menunggu konfirmasi'}">
+                                <%@ include file="components/card-jadwal.jsp" %>
+                            </c:if>
+                        </c:forEach>
+                    </c:otherwise>
+                </c:choose>
+            </div>
         </div>
 
         <%-- Tab: Aktif (murid) --%>
         <div class="tab-content-panel ${param.tab == 'aktif' ? 'active' : ''}" id="panel-aktif">
+            <div class="row g-4">
+                <c:choose>
+                    <c:when test="${countAktif == 0}">${emptyStateHtml}</c:when>
+                    <c:otherwise>
+                        <c:forEach items="${daftarJadwal}" var="j">
+                            <c:if test="${fn:toLowerCase(j.statusPemesanan) == 'dikonfirmasi' || fn:toLowerCase(j.statusPemesanan) == 'berlangsung'}">
+                                <%@ include file="components/card-jadwal.jsp" %>
+                            </c:if>
+                        </c:forEach>
+                    </c:otherwise>
+                </c:choose>
+            </div>
         </div>
-
     </c:when>
+
     <c:when test="${sessionScope.userRole == 'GURU'}">
-        <%-- Tab Nav GURU --%>
         <div class="jadwal-tabs">
             <button class="jadwal-tab-btn ${empty param.tab || param.tab == 'permintaan' ? 'active' : ''}"
                     onclick="switchTab('permintaan', this)">
                 <i class="bi bi-inbox"></i> Permintaan
-                <span class="badge-count" id="badgePermintaan">0</span>
+                <span class="badge-count">${countMenunggu}</span>
             </button>
             <button class="jadwal-tab-btn ${param.tab == 'aktif' ? 'active' : ''}"
                     onclick="switchTab('aktif', this)">
                 <i class="bi bi-calendar-check"></i> Jadwal Aktif
-                <span class="badge-count" id="badgeAktifGuru">0</span>
+                <span class="badge-count">${countAktif}</span>
             </button>
         </div>
 
         <%-- Tab: Permintaan (guru) --%>
         <div class="tab-content-panel ${empty param.tab || param.tab == 'permintaan' ? 'active' : ''}" id="panel-permintaan">
+            <div class="row g-4">
+                <c:choose>
+                    <c:when test="${countMenunggu == 0}">${emptyStateHtml}</c:when>
+                    <c:otherwise>
+                        <c:forEach items="${daftarJadwal}" var="j">
+                            <c:if test="${fn:toLowerCase(j.statusPemesanan) == 'menunggu konfirmasi'}">
+                                <%@ include file="components/card-jadwal.jsp" %>
+                            </c:if>
+                        </c:forEach>
+                    </c:otherwise>
+                </c:choose>
+            </div>
         </div>
 
         <%-- Tab: Aktif (guru) --%>
         <div class="tab-content-panel ${param.tab == 'aktif' ? 'active' : ''}" id="panel-aktif">
+            <div class="row g-4">
+                <c:choose>
+                    <c:when test="${countAktif == 0}">${emptyStateHtml}</c:when>
+                    <c:otherwise>
+                        <c:forEach items="${daftarJadwal}" var="j">
+                            <c:if test="${fn:toLowerCase(j.statusPemesanan) == 'dikonfirmasi' || fn:toLowerCase(j.statusPemesanan) == 'berlangsung'}">
+                                <%@ include file="components/card-jadwal.jsp" %>
+                            </c:if>
+                        </c:forEach>
+                    </c:otherwise>
+                </c:choose>
+            </div>
         </div>
     </c:when>
 </c:choose>
 
-<div id="jadwal-panels"></div>
-<script id="jadwal-data" type="application/json">${empty daftarJadwalJson ? '[]' : daftarJadwalJson}</script>
 <script>
-    var jadwalData = [];
-    try {
-        jadwalData = JSON.parse(document.getElementById('jadwal-data').textContent || '[]');
-    } catch (e) {
-        jadwalData = [];
-    }
-
-    var userRole = '${sessionScope.userRole}';
-    var ctx = '${pageContext.request.contextPath}';
-
-    function formatTanggal(dtStr) {
-        if (!dtStr || dtStr === 'null') return '-';
-        try {
-            var d = new Date(dtStr.replace(' ', 'T'));
-            return d.toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric'}) +
-                   ', ' + d.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit', hour12:false});
-        } catch(e) { return dtStr; }
-    }
-    function formatJam(dtStr) {
-        if (!dtStr || dtStr === 'null') return '-';
-        try {
-            var d = new Date(dtStr.replace(' ', 'T'));
-            return d.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit', hour12:false});
-        } catch(e) { return dtStr; }
-    }
-
-    function renderBadge(status) {
-        if (!status) return '';
-        var s = status.toLowerCase();
-        if (s === 'menunggu konfirmasi') return '<span class="badge text-dark rounded-pill" style="background-color: #FBBF24;">Menunggu</span>';
-        if (s === 'dikonfirmasi') return '<span class="badge text-white rounded-pill" style="background-color: #2B4C7E;">Dikonfirmasi</span>';
-        if (s === 'berlangsung') return '<span class="badge bg-success rounded-pill">Berlangsung</span>';
-        return '<span class="badge bg-secondary rounded-pill">' + status + '</span>';
-    }
-
-    function isLunas(j) {
-        return j.statusPembayaran && j.statusPembayaran.toLowerCase() === 'lunas';
-    }
-
-    function renderActions(j) {
-        var html = '';
-        if (!j.status) return html;
-        var s = j.status.toLowerCase();
-
-        if (userRole === 'MURID') {
-            if (s === 'menunggu konfirmasi') {
-                html += '<a href="' + ctx + '/pesan/menunggu?id=' + j.idPemesanan + '" class="btn btn-outline-primary btn-sm rounded-pill px-3 me-1">Lihat Status</a>';
-                html += '<button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3" ' +
-                        'onclick="showKonfirmasi(\'Batalkan pesanan?\', \'Apakah kamu yakin ingin membatalkan pesanan ini?\', function(){ submitForm(\'' + ctx + '/pesan/batal\', {idPemesanan:' + j.idPemesanan + '}) })">' +
-                        'Batalkan</button>';
-            } else if (s === 'dikonfirmasi') {
-                if (!isLunas(j)) {
-                    html += '<a href="' + ctx + '/bayar?id=' + j.idPemesanan + '" class="btn btn-primary btn-sm rounded-pill px-4">Bayar</a>';
-                } else {
-                    html += '<span class="badge text-dark rounded-pill px-3 py-2" style="background-color: #FBBF24;">Menunggu Waktu Sesi</span>';
-                }
-            } else if (s === 'berlangsung') {
-                html += '<span class="badge bg-success rounded-pill px-3 py-2">Sedang Berlangsung</span>';
-            }
-        } else if (userRole === 'GURU') {
-            if (s === 'menunggu konfirmasi') {
-                html += '<button type="button" class="btn btn-success btn-sm rounded-pill px-3" ' +
-                        'onclick="showKonfirmasi(\'Terima permintaan?\', \'Kamu akan menerima sesi belajar dari murid ini. Lanjutkan?\', function(){ submitForm(\'' + ctx + '/jadwal/konfirmasi\', {idPemesanan:' + j.idPemesanan + ', aksi:\'terima\'}) })">' +
-                        'Terima</button>';
-            } else if (s === 'dikonfirmasi') {
-                html += '<button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 me-1" ' +
-                        'onclick="showKonfirmasi(\'Batalkan sesi?\', \'Sesi akan dikembalikan ke pencarian guru. Murid akan mencari guru lain.\', function(){ submitForm(\'' + ctx + '/jadwal/batal-guru\', {idPemesanan:' + j.idPemesanan + '}) }, true)">' +
-                        'Batalkan Sesi</button>';
-                if (isLunas(j)) {
-                    html += '<button type="button" class="btn btn-primary btn-sm rounded-pill px-3" ' +
-                            'onclick="showKonfirmasi(\'Selesaikan sesi?\', \'Tandai sesi ini sebagai selesai?\', function(){ submitForm(\'' + ctx + '/jadwal/selesai\', {idPemesanan:' + j.idPemesanan + '}) })">' +
-                            'Selesaikan Sesi</button>';
-                } else {
-                    html += '<button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" disabled title="Menunggu pembayaran murid">Selesaikan Sesi</button>';
-                }
-            } else if (s === 'berlangsung') {
-                if (isLunas(j)) {
-                    html += '<button type="button" class="btn btn-primary btn-sm rounded-pill px-3" ' +
-                            'onclick="showKonfirmasi(\'Selesaikan sesi?\', \'Tandai sesi ini sebagai selesai?\', function(){ submitForm(\'' + ctx + '/jadwal/selesai\', {idPemesanan:' + j.idPemesanan + '}) })">' +
-                            'Selesaikan Sesi</button>';
-                } else {
-                    html += '<button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" disabled title="Menunggu pembayaran murid">Selesaikan Sesi</button>';
-                }
-            }
-        }
-        return html;
-    }
-
-    function renderCard(j) {
-        var personLabel = userRole === 'MURID' ? 'Guru' : 'Murid';
-        var personName = userRole === 'MURID'
-            ? (j.namaGuru || '<span class="text-muted fst-italic">Menunggu guru...</span>')
-            : j.namaMurid;
-
-        return '<div class="col-md-6">' +
-            '<div class="card shadow-sm border-0 h-100" style="border-radius:1.25rem;">' +
-            '<div class="card-body p-4 d-flex flex-column">' +
-            '<div class="d-flex justify-content-between align-items-start mb-3">' +
-            '<div><h5 class="fw-bold text-dark mb-1">' + j.namaMateri + '</h5>' +
-            '<div class="text-secondary" style="font-size:0.85rem;">' + j.namaMapel + '</div></div>' +
-            renderBadge(j.status) +
-            '</div>' +
-            '<div class="mb-3 p-3 rounded" style="background:#F8FAFC;border:1px solid #E2E8F0;font-size:0.9rem;">' +
-            '<div class="mb-2"><strong>' + personLabel + ':</strong> ' + personName + '</div>' +
-            '<div class="mb-2"><i class="bi bi-clock me-2 text-primary"></i>' +
-            formatTanggal(j.waktuMulai) + ' &ndash; ' + formatJam(j.waktuSelesai) + '</div>' +
-            '<div><i class="bi bi-geo-alt me-2 text-danger"></i>' + j.lokasiSesi + '</div>' +
-            '</div>' +
-            '<div class="mt-auto pt-3 border-top d-flex gap-2 justify-content-end">' +
-            renderActions(j) +
-            '</div></div></div></div>';
-    }
-
-    function renderEmptyState(label) {
-        return '<div class="col-12"><div class="alert alert-info border-0" style="background:#EFF6FF;color:#1D4ED8;border-radius:0.75rem;">' +
-               '<i class="bi bi-info-circle-fill me-2"></i>Belum ada ' + label + '.</div></div>';
-    }
-
-    function populatePanels() {
-        if (userRole === 'MURID') {
-            var badgeMenunggu = document.getElementById('badgeMenunggu');
-            var badgeAktif = document.getElementById('badgeAktif');
-            var panelMenunggu = document.getElementById('panel-menunggu');
-            var panelAktif = document.getElementById('panel-aktif');
-            if (!badgeMenunggu || !badgeAktif || !panelMenunggu || !panelAktif) return;
-            var menunggu = jadwalData.filter(j => j.status && j.status.toLowerCase() === 'menunggu konfirmasi');
-            var aktif = jadwalData.filter(j => j.status && (j.status.toLowerCase() === 'dikonfirmasi' || j.status.toLowerCase() === 'berlangsung'));
-
-            document.getElementById('badgeMenunggu').textContent = menunggu.length;
-            document.getElementById('badgeAktif').textContent = aktif.length;
-
-            var pmHtml = '<div class="row g-4">';
-            pmHtml += menunggu.length > 0 ? menunggu.map(renderCard).join('') : renderEmptyState('permintaan yang menunggu');
-            pmHtml += '</div>';
-            document.getElementById('panel-menunggu').innerHTML = pmHtml;
-
-            var paHtml = '<div class="row g-4">';
-            paHtml += aktif.length > 0 ? aktif.map(renderCard).join('') : renderEmptyState('jadwal aktif');
-            paHtml += '</div>';
-            document.getElementById('panel-aktif').innerHTML = paHtml;
-
-        } else if (userRole === 'GURU') {
-            var badgePermintaan = document.getElementById('badgePermintaan');
-            var badgeAktifGuru = document.getElementById('badgeAktifGuru');
-            var panelPermintaan = document.getElementById('panel-permintaan');
-            var panelAktifGuru = document.getElementById('panel-aktif');
-            if (!badgePermintaan || !badgeAktifGuru || !panelPermintaan || !panelAktifGuru) return;
-            var permintaan = jadwalData.filter(j => j.status && j.status.toLowerCase() === 'menunggu konfirmasi');
-            var aktifGuru = jadwalData.filter(j => j.status && (j.status.toLowerCase() === 'dikonfirmasi' || j.status.toLowerCase() === 'berlangsung'));
-
-            document.getElementById('badgePermintaan').textContent = permintaan.length;
-            document.getElementById('badgeAktifGuru').textContent = aktifGuru.length;
-
-            var prHtml = '<div class="row g-4">';
-            prHtml += permintaan.length > 0 ? permintaan.map(renderCard).join('') : renderEmptyState('permintaan masuk');
-            prHtml += '</div>';
-            document.getElementById('panel-permintaan').innerHTML = prHtml;
-
-            var agHtml = '<div class="row g-4">';
-            agHtml += aktifGuru.length > 0 ? aktifGuru.map(renderCard).join('') : renderEmptyState('jadwal aktif');
-            agHtml += '</div>';
-            document.getElementById('panel-aktif').innerHTML = agHtml;
-        }
-    }
-
     function submitForm(actionPath, params) {
         var form = document.createElement('form');
         form.method = 'POST';
@@ -307,37 +197,28 @@
         if (panel) panel.classList.add('active');
     }
 
-    // Modal Konfirmasi Logic
     var confirmActionCallback = null;
     function showKonfirmasi(title, message, callback, isDanger = false) {
         document.getElementById('konfirmasiModalTitle').textContent = title;
         document.getElementById('konfirmasiModalBody').textContent = message;
-        
         var btnYa = document.getElementById('btnKonfirmasiYa');
         if (isDanger) {
             btnYa.className = 'btn btn-danger rounded-pill px-4';
         } else {
             btnYa.className = 'btn btn-primary rounded-pill px-4';
         }
-        
         confirmActionCallback = callback;
         var modal = new bootstrap.Modal(document.getElementById('konfirmasiModal'));
         modal.show();
     }
+
     document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('btnKonfirmasiYa').addEventListener('click', function() {
-            if (confirmActionCallback) {
-                confirmActionCallback();
-            }
+            if (confirmActionCallback) confirmActionCallback();
             var modalEl = document.getElementById('konfirmasiModal');
             var modal = bootstrap.Modal.getInstance(modalEl);
-            if (modal) {
-                modal.hide();
-            }
+            if (modal) modal.hide();
         });
-
-        // Init
-        populatePanels();
 
         // Handle tab param from URL
         var urlTab = new URLSearchParams(window.location.search).get('tab');
@@ -356,9 +237,7 @@
         <h5 class="modal-title fw-bold" id="konfirmasiModalTitle">Konfirmasi</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body text-secondary" id="konfirmasiModalBody">
-        Apakah Anda yakin?
-      </div>
+      <div class="modal-body text-secondary" id="konfirmasiModalBody">Apakah Anda yakin?</div>
       <div class="modal-footer border-0 pt-0">
         <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Tidak</button>
         <button type="button" class="btn btn-primary rounded-pill px-4" id="btnKonfirmasiYa">Ya</button>
