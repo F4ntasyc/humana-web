@@ -197,7 +197,7 @@ public class DashboardServlet extends HttpServlet {
                         "JOIN Murid murid ON murid.id_murid = p.id_murid " +
                         "JOIN MateriGuru mg ON mg.id_materi = p.id_materi AND mg.id_guru = ? " +
                         "WHERE p.id_guru IS NULL AND p.status_pemesanan = 'menunggu konfirmasi' " +
-                        "ORDER BY p.id_pemesanan DESC LIMIT 3";
+                        "ORDER BY p.id_pemesanan DESC LIMIT 4";
                 try (PreparedStatement stmt = conn.prepareStatement(sqlTerbaru)) {
                     stmt.setInt(1, userId);
                     try (ResultSet rs = stmt.executeQuery()) {
