@@ -106,16 +106,6 @@
             z-index: 100;
             flex-shrink: 0;
         }
-        .search-bar {
-            background: #F1F5F9;
-            border-radius: 20px;
-            padding: 0.6rem 1.25rem;
-            display: flex; align-items: center; gap: 0.75rem;
-            width: 350px;
-        }
-        .search-bar input { border: none; background: transparent; outline: none; width: 100%; font-size: 0.9rem; font-family: 'DM Sans', sans-serif;}
-        .search-bar input::placeholder { color: #94A3B8; }
-        
         .header-actions { display: flex; align-items: center; gap: 1.75rem; }
         .header-actions a { color: #64748B; text-decoration: none; font-weight: 500; font-size: 0.95rem; transition: color 0.3s; }
         .header-actions a:hover { color: var(--humana-navy); }
@@ -167,6 +157,7 @@
                 <c:when test="${sessionScope.userRole == 'GURU'}">
                     <a href="${pageContext.request.contextPath}/dashboard" class="nav-link-item ${activePage == 'dashboard' ? 'active' : ''}"><i class="bi bi-house-door"></i> Beranda</a>
                     <a href="${pageContext.request.contextPath}/jadwal" class="nav-link-item ${activePage == 'jadwal' ? 'active' : ''}"><i class="bi bi-calendar-event"></i> Jadwal Saya</a>
+                    <a href="${pageContext.request.contextPath}/guru/pendapatan" class="nav-link-item ${activePage == 'pendapatan' ? 'active' : ''}"><i class="bi bi-wallet2"></i> Pendapatan</a>
                     <a href="${pageContext.request.contextPath}/materi" class="nav-link-item ${activePage == 'materi' ? 'active' : ''}"><i class="bi bi-journal-text"></i> Materi</a>
                     <a href="${pageContext.request.contextPath}/histori" class="nav-link-item ${activePage == 'riwayat' ? 'active' : ''}"><i class="bi bi-clock-history"></i> Aktivitas</a>
                 </c:when>
@@ -191,11 +182,7 @@
     <!-- Main Content -->
     <main class="main-wrapper">
         <header class="top-header">
-            <div class="search-bar">
-                <i class="bi bi-search text-muted"></i>
-                <input type="text" placeholder="Cari materi atau jadwal...">
-            </div>
-            <div class="header-actions">
+            <div class="header-actions w-100 justify-content-end">
                 <a href="#">Bantuan</a>
                 <i class="bi bi-bell"></i>
                 <a href="${pageContext.request.contextPath}/profil" class="user-profile">

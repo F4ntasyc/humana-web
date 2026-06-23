@@ -1,9 +1,12 @@
 package com.humana.servlet;
 
 import com.humana.dao.GuruDAO;
+import com.humana.dao.MateriGuruDAO;
 import com.humana.dao.MuridDAO;
+import com.humana.dao.PortfolioDAO;
 import com.humana.model.Guru;
 import com.humana.model.Murid;
+import com.humana.model.Portfolio;
 import com.humana.util.DBConnection;
 
 import jakarta.servlet.ServletException;
@@ -14,34 +17,32 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Servlet untuk manajemen profil pengguna (Guru & Murid).
- * URL Pattern: /profile/*
- *
- * <p>MVC Controller — semua response melalui forward ke JSP atau redirect.
- * Tidak ada response JSON.</p>
- *
- * <p>Routes:
- * <ul>
- *   <li>GET  /profile              → tampilkan halaman profil</li>
- *   <li>POST /profile/update-basic → update data dasar, redirect</li>
- *   <li>POST /profile/update-academic    → update akademik (MURID), redirect</li>
- *   <li>POST /profile/update-availability → toggle aktif (GURU), redirect</li>
- * </ul>
- * </p>
+ * URL Pattern: /profile/* dan /profil/*
  */
 public class ProfileServlet extends HttpServlet {
 
     private final GuruDAO guruDAO = new GuruDAO();
     private final MuridDAO muridDAO = new MuridDAO();
+    private final PortfolioDAO portfolioDAO = new PortfolioDAO();
+    private final MateriGuruDAO materiGuruDAO = new MateriGuruDAO();
+
+    private String profilUrl(HttpServletRequest req) {
+        return req.getContextPath() + "/profil";
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        // Proteksi halaman
         HttpSession session = req.getSession(false);
         if (session == null || session.getAttribute("userId") == null) {
             resp.sendRedirect(req.getContextPath() + "/auth/login");
@@ -52,14 +53,13 @@ public class ProfileServlet extends HttpServlet {
         if (pathInfo == null || "/".equals(pathInfo)) {
             showProfile(req, resp, session);
         } else {
-            resp.sendRedirect(req.getContextPath() + "/profile");
+            resp.sendRedirect(profilUrl(req));
         }
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        // Proteksi halaman
         HttpSession session = req.getSession(false);
         if (session == null || session.getAttribute("userId") == null) {
             resp.sendRedirect(req.getContextPath() + "/auth/login");
@@ -79,16 +79,20 @@ public class ProfileServlet extends HttpServlet {
             case "/update-availability":
                 updateAvailability(req, resp, session);
                 break;
+            case "/portfolio/tambah":
+                tambahPortfolio(req, resp, session);
+                break;
+            case "/portfolio/hapus":
+                hapusPortfolio(req, resp, session);
+                break;
+            case "/materi/simpan":
+                simpanMateriGuru(req, resp, session);
+                break;
             default:
-                resp.sendRedirect(req.getContextPath() + "/profile");
+                resp.sendRedirect(profilUrl(req));
         }
     }
 
-    // ======== GET: Tampilkan Profil ========
-
-    /**
-     * GET /profile — ambil data user, hitung rating (guru), forward ke profil.jsp
-     */
     private void showProfile(HttpServletRequest req, HttpServletResponse resp, HttpSession session)
             throws ServletException, IOException {
         int userId = (int) session.getAttribute("userId");
@@ -103,8 +107,10 @@ public class ProfileServlet extends HttpServlet {
                     return;
                 }
                 req.setAttribute("guru", guru);
+                req.setAttribute("daftarPortfolio", portfolioDAO.findByGuruId(userId));
+                req.setAttribute("materiGuruList", materiGuruDAO.findMateriDetailByGuruId(userId));
+                req.setAttribute("semuaMateri", loadSemuaMateriUntukPilih());
 
-                // Hitung AVG rating dari Feedback JOIN Pemesanan
                 double ratingAvg = 0;
                 String ratingSql = "SELECT AVG(f.rating) AS avg_rating FROM Feedback f "
                         + "JOIN Pemesanan p ON f.id_pemesanan = p.id_pemesanan WHERE p.id_guru = ?";
@@ -138,12 +144,28 @@ public class ProfileServlet extends HttpServlet {
         req.getRequestDispatcher("/WEB-INF/views/profil.jsp").forward(req, resp);
     }
 
-    // ======== POST: Update Data Dasar ========
+    private List<MateriPilihDTO> loadSemuaMateriUntukPilih() {
+        List<MateriPilihDTO> list = new ArrayList<>();
+        String sql = "SELECT m.id_materi, m.nama_materi, m.kelas, mp.nama_mapel, mp.jenjang "
+                + "FROM Materi m JOIN MataPelajaran mp ON m.id_mapel = mp.id_mapel ORDER BY mp.jenjang, m.kelas, m.nama_materi";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                MateriPilihDTO d = new MateriPilihDTO();
+                d.idMateri = rs.getInt("id_materi");
+                d.namaMateri = rs.getString("nama_materi");
+                d.kelas = rs.getInt("kelas");
+                d.namaMapel = rs.getString("nama_mapel");
+                d.jenjang = rs.getString("jenjang");
+                list.add(d);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 
-    /**
-     * POST /profile/update-basic — update nama, username, noTelepon, jenisKelamin, alamat.
-     * Berlaku untuk GURU dan MURID. Redirect ke /profile?sukses=1.
-     */
     private void updateBasic(HttpServletRequest req, HttpServletResponse resp, HttpSession session)
             throws IOException {
         int userId = (int) session.getAttribute("userId");
@@ -184,36 +206,29 @@ public class ProfileServlet extends HttpServlet {
                 }
             }
 
-            // Update session userName jika nama berubah
             if (nama != null && !nama.trim().isEmpty()) {
                 session.setAttribute("userName", nama.trim());
             }
 
-            resp.sendRedirect(req.getContextPath() + "/profile?sukses=1");
+            resp.sendRedirect(profilUrl(req) + "?sukses=1");
 
         } catch (Exception e) {
             e.printStackTrace();
-            resp.sendRedirect(req.getContextPath() + "/profile?error=Gagal+memperbarui+profil");
+            resp.sendRedirect(profilUrl(req) + "?error=Gagal+memperbarui+profil");
         }
     }
 
-    // ======== POST: Update Akademik (MURID only) ========
-
-    /**
-     * POST /profile/update-academic — update kelas dan jurusan murid.
-     * Hanya untuk role MURID. Redirect ke /profile?sukses=1.
-     */
     private void updateAcademic(HttpServletRequest req, HttpServletResponse resp, HttpSession session)
             throws IOException {
         String userRole = (String) session.getAttribute("userRole");
         if (!"MURID".equals(userRole)) {
-            resp.sendRedirect(req.getContextPath() + "/profile");
+            resp.sendRedirect(profilUrl(req));
             return;
         }
 
         int userId = (int) session.getAttribute("userId");
         String kelasStr = req.getParameter("kelas");
-        String jenjang = req.getParameter("jenjang"); // SD, SMP, atau SMA — disimpan ke kolom jurusan
+        String jenjang = req.getParameter("jenjang");
 
         try {
             int kelas = 0;
@@ -221,37 +236,49 @@ public class ProfileServlet extends HttpServlet {
                 kelas = Integer.parseInt(kelasStr.trim());
             }
 
-            // jurusan di DB dipakai untuk menyimpan jenjang (SD/SMP/SMA)
+            if (jenjang == null || jenjang.isBlank() || kelas <= 0) {
+                resp.sendRedirect(profilUrl(req) + "?error=Jenjang+dan+kelas+wajib+dipilih");
+                return;
+            }
+
+            if (!isKelasValid(jenjang, kelas)) {
+                resp.sendRedirect(profilUrl(req) + "?error=Kelas+tidak+sesuai+dengan+jenjang");
+                return;
+            }
+
             String sql = "UPDATE Murid SET kelas = ?, jurusan = ? WHERE id_murid = ?";
             try (Connection conn = DBConnection.getConnection();
                  PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setInt(1, kelas);
-                stmt.setString(2, jenjang != null ? jenjang.trim() : "");
+                stmt.setString(2, jenjang.trim());
                 stmt.setInt(3, userId);
                 stmt.executeUpdate();
             }
 
-            resp.sendRedirect(req.getContextPath() + "/profile?sukses=1");
+            resp.sendRedirect(profilUrl(req) + "?sukses=1");
 
         } catch (NumberFormatException e) {
-            resp.sendRedirect(req.getContextPath() + "/profile?error=Kelas+harus+berupa+angka");
+            resp.sendRedirect(profilUrl(req) + "?error=Kelas+harus+berupa+angka");
         } catch (Exception e) {
             e.printStackTrace();
-            resp.sendRedirect(req.getContextPath() + "/profile?error=Gagal+memperbarui+profil+akademik");
+            resp.sendRedirect(profilUrl(req) + "?error=Gagal+memperbarui+profil+akademik");
         }
     }
 
-    // ======== POST: Update Ketersediaan (GURU only) ========
+    private boolean isKelasValid(String jenjang, int kelas) {
+        return switch (jenjang) {
+            case "SD" -> kelas >= 1 && kelas <= 6;
+            case "SMP" -> kelas >= 7 && kelas <= 9;
+            case "SMA", "SMK" -> kelas >= 10 && kelas <= 12;
+            default -> false;
+        };
+    }
 
-    /**
-     * POST /profile/update-availability — toggle is_active guru.
-     * Hanya untuk role GURU. Redirect ke /profile?sukses=1.
-     */
     private void updateAvailability(HttpServletRequest req, HttpServletResponse resp, HttpSession session)
             throws IOException {
         String userRole = (String) session.getAttribute("userRole");
         if (!"GURU".equals(userRole)) {
-            resp.sendRedirect(req.getContextPath() + "/profile");
+            resp.sendRedirect(profilUrl(req));
             return;
         }
 
@@ -260,7 +287,6 @@ public class ProfileServlet extends HttpServlet {
 
         try {
             int isActive = "1".equals(isActiveStr) ? 1 : 0;
-
             String sql = "UPDATE Guru SET is_active = ? WHERE id_guru = ?";
             try (Connection conn = DBConnection.getConnection();
                  PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -268,12 +294,101 @@ public class ProfileServlet extends HttpServlet {
                 stmt.setInt(2, userId);
                 stmt.executeUpdate();
             }
-
-            resp.sendRedirect(req.getContextPath() + "/profile?sukses=1");
-
+            resp.sendRedirect(profilUrl(req) + "?sukses=1");
         } catch (Exception e) {
             e.printStackTrace();
-            resp.sendRedirect(req.getContextPath() + "/profile?error=Gagal+memperbarui+ketersediaan");
+            resp.sendRedirect(profilUrl(req) + "?error=Gagal+memperbarui+ketersediaan");
         }
+    }
+
+    private void tambahPortfolio(HttpServletRequest req, HttpServletResponse resp, HttpSession session)
+            throws IOException {
+        if (!"GURU".equals(session.getAttribute("userRole"))) {
+            resp.sendRedirect(profilUrl(req));
+            return;
+        }
+        int idGuru = (int) session.getAttribute("userId");
+
+        String judul = req.getParameter("judul");
+        String deskripsi = req.getParameter("deskripsi");
+        String tipe = req.getParameter("tipePortfolio");
+        String bukti = req.getParameter("bukti");
+        String tglMulai = req.getParameter("tanggalMulai");
+        String tglSelesai = req.getParameter("tanggalSelesai");
+
+        if (judul == null || judul.isBlank() || deskripsi == null || deskripsi.isBlank()
+                || tipe == null || tipe.isBlank() || bukti == null || bukti.isBlank()) {
+            resp.sendRedirect(profilUrl(req) + "?error=Portfolio:+semua+field+wajib+diisi&tab=portfolio");
+            return;
+        }
+
+        Portfolio p = new Portfolio();
+        p.setIdGuru(idGuru);
+        p.setJudul(judul.trim());
+        p.setDeskripsi(deskripsi.trim());
+        p.setTipePortfolio(tipe.trim());
+        p.setBukti(bukti.trim());
+        if (tglMulai != null && !tglMulai.isBlank()) {
+            p.setTanggalMulai(Date.valueOf(tglMulai));
+        }
+        if (tglSelesai != null && !tglSelesai.isBlank()) {
+            p.setTanggalSelesai(Date.valueOf(tglSelesai));
+        }
+
+        if (portfolioDAO.insert(p)) {
+            resp.sendRedirect(profilUrl(req) + "?sukses=1&tab=portfolio");
+        } else {
+            resp.sendRedirect(profilUrl(req) + "?error=Gagal+menyimpan+portfolio&tab=portfolio");
+        }
+    }
+
+    private void hapusPortfolio(HttpServletRequest req, HttpServletResponse resp, HttpSession session)
+            throws IOException {
+        if (!"GURU".equals(session.getAttribute("userRole"))) {
+            resp.sendRedirect(profilUrl(req));
+            return;
+        }
+        int idGuru = (int) session.getAttribute("userId");
+        String idStr = req.getParameter("idPortfolio");
+        if (idStr == null) {
+            resp.sendRedirect(profilUrl(req) + "?tab=portfolio");
+            return;
+        }
+        portfolioDAO.delete(Integer.parseInt(idStr), idGuru);
+        resp.sendRedirect(profilUrl(req) + "?sukses=1&tab=portfolio");
+    }
+
+    private void simpanMateriGuru(HttpServletRequest req, HttpServletResponse resp, HttpSession session)
+            throws IOException {
+        if (!"GURU".equals(session.getAttribute("userRole"))) {
+            resp.sendRedirect(profilUrl(req));
+            return;
+        }
+        int idGuru = (int) session.getAttribute("userId");
+        String[] ids = req.getParameterValues("idMateri");
+        List<Integer> idList = ids == null ? List.of() :
+                Arrays.stream(ids).map(Integer::parseInt).collect(Collectors.toList());
+
+        try {
+            materiGuruDAO.syncMateriGuru(idGuru, idList);
+            resp.sendRedirect(profilUrl(req) + "?sukses=1&tab=materi");
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.sendRedirect(profilUrl(req) + "?error=Gagal+menyimpan+materi&tab=materi");
+        }
+    }
+
+    public static class MateriPilihDTO {
+        public int idMateri;
+        public String namaMateri;
+        public int kelas;
+        public String namaMapel;
+        public String jenjang;
+
+        public int getIdMateri() { return idMateri; }
+        public String getNamaMateri() { return namaMateri; }
+        public int getKelas() { return kelas; }
+        public String getNamaMapel() { return namaMapel; }
+        public String getJenjang() { return jenjang; }
     }
 }

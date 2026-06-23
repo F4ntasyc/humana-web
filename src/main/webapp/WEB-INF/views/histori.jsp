@@ -76,7 +76,10 @@
                                         <td class="pe-4">
                                             <c:choose>
                                                 <c:when test="${h.statusPemesanan == 'selesai' and empty h.rating}">
-                                                    <button type="button" class="btn btn-outline-warning btn-sm rounded-pill" onclick="openFeedbackModal(${h.idPemesanan}, '${h.namaGuru}', '${h.namaMateri}')">
+                                                    <button type="button" class="btn btn-outline-warning btn-sm rounded-pill btn-feedback"
+                                                            data-id="${h.idPemesanan}"
+                                                            data-guru="<c:out value='${h.namaGuru}'/>"
+                                                            data-materi="<c:out value='${h.namaMateri}'/>">
                                                         <i class="bi bi-star"></i> Beri Ulasan
                                                     </button>
                                                 </c:when>
@@ -180,6 +183,12 @@
 </style>
 
 <script>
+    document.querySelectorAll('.btn-feedback').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            openFeedbackModal(this.dataset.id, this.dataset.guru, this.dataset.materi);
+        });
+    });
+
     function openFeedbackModal(idPemesanan, guru, materi) {
         document.getElementById('fbIdPemesanan').value = idPemesanan;
         document.getElementById('fbGuru').textContent = 'Guru: ' + guru;

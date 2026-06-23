@@ -1,12 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
 :root {
     --primary: #2563EB;
-    --accent: #F97316;
 }
 
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     background-color: #F8FAFC;
     color: #334155;
     display: flex;

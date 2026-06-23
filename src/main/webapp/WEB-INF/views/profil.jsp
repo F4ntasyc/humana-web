@@ -9,7 +9,7 @@
 <style>
     /* ===== PROFILE PAGE STYLES ===== */
     .profile-hero {
-        background: linear-gradient(135deg, var(--primary) 0%, #1E40AF 100%);
+        background: linear-gradient(135deg, #1E365C 0%, #2563EB 100%);
         border-radius: 1.25rem;
         padding: 2.5rem 2rem;
         color: #fff;
@@ -203,7 +203,7 @@
     .form-input {
         width: 100%;
         padding: 0.7rem 1rem;
-        font-family: 'Inter', sans-serif;
+        font-family: 'DM Sans', sans-serif;
         font-size: 0.875rem;
         border: 1.5px solid #E2E8F0;
         border-radius: 0.625rem;
@@ -294,7 +294,7 @@
     /* Save button */
     .btn-save {
         padding: 0.7rem 2rem;
-        font-family: 'Inter', sans-serif;
+        font-family: 'DM Sans', sans-serif;
         font-size: 0.875rem;
         font-weight: 600;
         color: #fff;
@@ -311,6 +311,45 @@
     .btn-save:active {
         transform: translateY(0);
     }
+
+    .materi-search-wrap {
+        position: relative;
+        margin-bottom: 1rem;
+    }
+    .materi-search-wrap i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94A3B8;
+        pointer-events: none;
+    }
+    .materi-search-input {
+        width: 100%;
+        padding: 0.7rem 1rem 0.7rem 2.5rem;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.875rem;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 0.625rem;
+        background: #F8FAFC;
+        color: #1E293B;
+        transition: all 0.2s ease;
+    }
+    .materi-search-input:focus {
+        outline: none;
+        border-color: #2563EB;
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+    .materi-item-hidden { display: none !important; }
+    .materi-empty-msg {
+        display: none;
+        text-align: center;
+        padding: 2rem 1rem;
+        color: #94A3B8;
+        font-size: 0.875rem;
+    }
+    .materi-empty-msg.visible { display: block; }
 
     @media (max-width: 767.98px) {
         .profile-hero { padding: 1.5rem 1.25rem; }
@@ -391,7 +430,7 @@
 
         <%-- Ketersediaan toggle (GURU only, kanan, tanpa tombol simpan) --%>
         <c:if test="${sessionScope.userRole == 'GURU'}">
-            <form method="post" action="${pageContext.request.contextPath}/profile/update-availability" id="formAvailabilityHero">
+            <form method="post" action="${pageContext.request.contextPath}/profil/update-availability" id="formAvailabilityHero">
                 <div style="background:#ffffff; border:1px solid #E2E8F0; border-radius:1rem; padding:1rem 1.5rem; min-width:260px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
                     <div style="font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#64748B; margin-bottom:0.6rem;">Status Ketersediaan</div>
                     <div class="toggle-container" style="background:transparent; border:none; padding:0; gap:0.75rem;">
@@ -430,13 +469,25 @@
                 </button>
             </li>
         </c:if>
+        <c:if test="${sessionScope.userRole == 'GURU'}">
+            <li>
+                <button class="nav-tab-link" data-tab="tab-materi" role="tab" id="tabBtnMateri">
+                    <i class="bi bi-journal-bookmark"></i> Materi Diajar
+                </button>
+            </li>
+            <li>
+                <button class="nav-tab-link" data-tab="tab-portfolio" role="tab" id="tabBtnPortfolio">
+                    <i class="bi bi-briefcase"></i> Portfolio
+                </button>
+            </li>
+        </c:if>
     </ul>
 
     <%-- ===== TAB 1: Data Pribadi ===== --%>
     <div class="tab-panel active" id="tab-basic" role="tabpanel">
         <h3 class="form-section-title"><i class="bi bi-pencil-square me-2"></i>Edit Data Pribadi</h3>
 
-        <form method="post" action="${pageContext.request.contextPath}/profile/update-basic" id="formBasic">
+        <form method="post" action="${pageContext.request.contextPath}/profil/update-basic" id="formBasic">
             <div class="form-row">
                 <div class="form-group-profile">
                     <label for="nama">Nama Lengkap</label>
@@ -485,7 +536,7 @@
         <div class="tab-panel" id="tab-academic" role="tabpanel">
             <h3 class="form-section-title"><i class="bi bi-book me-2"></i>Informasi Akademik</h3>
 
-            <form method="post" action="${pageContext.request.contextPath}/profile/update-academic" id="formAcademic">
+            <form method="post" action="${pageContext.request.contextPath}/profil/update-academic" id="formAcademic" onsubmit="return validateAcademicForm()">
                 <div class="form-row">
                     <div class="form-group-profile">
                         <label for="jenjang">Jenjang</label>
@@ -517,7 +568,106 @@
         </div>
     </c:if>
 
-    <%-- Tab ketersediaan GURU sudah dipindah ke hero card, section ini dihapus --%>
+    <%-- Tab Materi Guru --%>
+    <c:if test="${sessionScope.userRole == 'GURU'}">
+        <div class="tab-panel" id="tab-materi" role="tabpanel">
+            <h3 class="form-section-title"><i class="bi bi-journal-bookmark me-2"></i>Materi yang Anda Ampu</h3>
+            <form method="post" action="${pageContext.request.contextPath}/profil/materi/simpan" id="formMateriGuru">
+                <div class="materi-search-wrap">
+                    <i class="bi bi-search"></i>
+                    <input type="text" class="materi-search-input" id="materiSearchInput" placeholder="Cari materi, mata pelajaran, jenjang, atau kelas..." autocomplete="off">
+                </div>
+                <div class="row g-2 mb-3" id="materiListContainer" style="max-height: 320px; overflow-y: auto;">
+                    <c:forEach items="${semuaMateri}" var="m">
+                        <c:set var="selected" value="false"/>
+                        <c:forEach items="${materiGuruList}" var="mg">
+                            <c:if test="${mg.idMateri == m.idMateri}"><c:set var="selected" value="true"/></c:if>
+                        </c:forEach>
+                        <div class="col-md-6 materi-item" data-search="${m.namaMateri} ${m.namaMapel} ${m.jenjang} ${m.kelas}">
+                            <label class="d-flex align-items-start gap-2 p-2 border rounded" style="cursor:pointer;">
+                                <input type="checkbox" name="idMateri" value="${m.idMateri}" class="mt-1" ${selected ? 'checked' : ''}>
+                                <span>
+                                    <span class="fw-semibold d-block">${m.namaMateri}</span>
+                                    <small class="text-muted">${m.namaMapel} &middot; ${m.jenjang} Kls ${m.kelas}</small>
+                                </span>
+                            </label>
+                        </div>
+                    </c:forEach>
+                </div>
+                <div class="materi-empty-msg" id="materiEmptyMsg">
+                    <i class="bi bi-search d-block mb-2" style="font-size:1.5rem;"></i>
+                    Tidak ada materi yang cocok dengan pencarian.
+                </div>
+                <button type="submit" class="btn-save"><i class="bi bi-check-lg me-1"></i> Simpan Materi</button>
+            </form>
+        </div>
+
+        <div class="tab-panel" id="tab-portfolio" role="tabpanel">
+            <h3 class="form-section-title"><i class="bi bi-briefcase me-2"></i>Portfolio</h3>
+
+            <c:forEach items="${daftarPortfolio}" var="pf">
+                <div class="border rounded p-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="fw-bold mb-1">${pf.judul}</h6>
+                            <span class="badge bg-light text-dark border">${pf.tipePortfolio}</span>
+                        </div>
+                        <form method="post" action="${pageContext.request.contextPath}/profil/portfolio/hapus" class="m-0">
+                            <input type="hidden" name="idPortfolio" value="${pf.idPortfolio}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus portfolio ini?')">Hapus</button>
+                        </form>
+                    </div>
+                    <p class="text-secondary small mt-2 mb-1">${pf.deskripsi}</p>
+                    <div class="small text-muted">Bukti: ${pf.bukti}</div>
+                </div>
+            </c:forEach>
+
+            <h4 class="fw-semibold mt-4 mb-3" style="font-size: 1rem;">Tambah Portfolio</h4>
+            <form method="post" action="${pageContext.request.contextPath}/profil/portfolio/tambah">
+                <div class="form-row">
+                    <div class="form-group-profile">
+                        <label for="judul">Judul</label>
+                        <input type="text" class="form-input" id="judul" name="judul" required>
+                    </div>
+                    <div class="form-group-profile">
+                        <label for="tipePortfolio">Tipe</label>
+                        <select class="form-input form-select-profile" id="tipePortfolio" name="tipePortfolio" required>
+                            <option value="">-- Pilih --</option>
+                            <option value="Sertifikat">Sertifikat</option>
+                            <option value="Pengalaman">Pengalaman Mengajar</option>
+                            <option value="Prestasi">Prestasi</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row single">
+                    <div class="form-group-profile">
+                        <label for="deskripsi">Deskripsi</label>
+                        <textarea class="form-input" id="deskripsi" name="deskripsi" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group-profile">
+                        <label for="tanggalMulai">Tanggal Mulai</label>
+                        <input type="date" class="form-input" id="tanggalMulai" name="tanggalMulai">
+                    </div>
+                    <div class="form-group-profile">
+                        <label for="tanggalSelesai">Tanggal Selesai</label>
+                        <input type="date" class="form-input" id="tanggalSelesai" name="tanggalSelesai">
+                    </div>
+                </div>
+                <div class="form-row single">
+                    <div class="form-group-profile">
+                        <label for="bukti">Bukti (URL atau keterangan)</label>
+                        <input type="text" class="form-input" id="bukti" name="bukti" required placeholder="https://... atau deskripsi bukti">
+                    </div>
+                </div>
+                <button type="submit" class="btn-save"><i class="bi bi-plus-lg me-1"></i> Tambah Portfolio</button>
+            </form>
+        </div>
+    </c:if>
+
+    <%-- Tab ketersediaan GURU sudah dipindah ke hero card --%>
 </div>
 
 <script>
@@ -556,6 +706,32 @@
             valueEl.textContent = ratingVal.toFixed(1) + ' / 5.0';
         } else {
             valueEl.textContent = 'Belum ada rating';
+        }
+    })();
+
+    function validateAcademicForm() {
+        updateKelasRange();
+        var jenjang = document.getElementById('jenjang');
+        var kelas = document.getElementById('kelas');
+        var warning = document.getElementById('kelasWarning');
+        if (!jenjang || !kelas) return true;
+        if (!jenjang.value || !kelas.value) {
+            alert('Jenjang dan kelas wajib dipilih.');
+            return false;
+        }
+        if (warning && warning.style.display === 'block') {
+            alert('Kelas tidak sesuai dengan jenjang yang dipilih.');
+            return false;
+        }
+        return true;
+    }
+
+    // Aktifkan tab dari query param
+    (function() {
+        var tab = new URLSearchParams(window.location.search).get('tab');
+        if (tab) {
+            var btn = document.querySelector('[data-tab="tab-' + tab + '"]');
+            if (btn) btn.click();
         }
     })();
 
@@ -610,6 +786,26 @@
         kelasEl.addEventListener('change', updateKelasRange);
         updateKelasRange();
     }
+
+    // ===== Materi Guru Search =====
+    (function() {
+        var searchInput = document.getElementById('materiSearchInput');
+        if (!searchInput) return;
+        var items = document.querySelectorAll('.materi-item');
+        var emptyMsg = document.getElementById('materiEmptyMsg');
+
+        searchInput.addEventListener('input', function() {
+            var q = this.value.trim().toLowerCase();
+            var visible = 0;
+            items.forEach(function(item) {
+                var haystack = (item.getAttribute('data-search') || '').toLowerCase();
+                var match = !q || haystack.indexOf(q) !== -1;
+                item.classList.toggle('materi-item-hidden', !match);
+                if (match) visible++;
+            });
+            if (emptyMsg) emptyMsg.classList.toggle('visible', visible === 0);
+        });
+    })();
 
     // ===== Auto-dismiss alerts =====
     setTimeout(function() {

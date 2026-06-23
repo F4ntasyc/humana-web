@@ -22,7 +22,7 @@ public class MataPelajaranDAO {
     }
 
     public MataPelajaran findById(int id) {
-        String sql = "SELECT * FROM mata_pelajaran WHERE id_mapel = ?";
+        String sql = "SELECT * FROM MataPelajaran WHERE id_mapel = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -39,7 +39,7 @@ public class MataPelajaranDAO {
     }
 
     public List<MataPelajaran> findAll() {
-        String sql = "SELECT * FROM mata_pelajaran";
+        String sql = "SELECT * FROM MataPelajaran";
         List<MataPelajaran> list = new ArrayList<>();
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -55,7 +55,7 @@ public class MataPelajaranDAO {
     }
 
     public List<MataPelajaran> findByJenjang(String jenjang) {
-        String sql = "SELECT * FROM mata_pelajaran WHERE jenjang = ?";
+        String sql = "SELECT * FROM MataPelajaran WHERE jenjang = ?";
         List<MataPelajaran> list = new ArrayList<>();
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -73,7 +73,7 @@ public class MataPelajaranDAO {
     }
 
     public boolean insert(MataPelajaran mp) {
-        String sql = "INSERT INTO mata_pelajaran (nama_mapel, jenjang) VALUES (?, ?)";
+        String sql = "INSERT INTO MataPelajaran (nama_mapel, jenjang) VALUES (?, ?)";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -96,7 +96,7 @@ public class MataPelajaranDAO {
     }
 
     public boolean update(MataPelajaran mp) {
-        String sql = "UPDATE mata_pelajaran SET nama_mapel = ?, jenjang = ? WHERE id_mapel = ?";
+        String sql = "UPDATE MataPelajaran SET nama_mapel = ?, jenjang = ? WHERE id_mapel = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -112,7 +112,7 @@ public class MataPelajaranDAO {
     }
 
     public boolean delete(int id) {
-        String sql = "DELETE FROM mata_pelajaran WHERE id_mapel = ?";
+        String sql = "DELETE FROM MataPelajaran WHERE id_mapel = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
