@@ -137,6 +137,7 @@ public class HistoryServlet extends HttpServlet {
 
         String sql;
         if ("MURID".equals(userRole)) {
+<<<<<<< HEAD
             sql = "SELECT p.id_pemesanan, p.status_pemesanan, p.waktu_mulai, p.waktu_selesai, p.lokasi_sesi, " +
                     "m.nama_materi, mp.nama_mapel, " +
                     "murid.nama_murid, guru.nama_guru, " +
@@ -150,8 +151,23 @@ public class HistoryServlet extends HttpServlet {
                     "WHERE p.status_pemesanan IN ('menunggu konfirmasi', 'dikonfirmasi', 'berlangsung') " +
                     "AND p.id_murid = ? " +
                     "ORDER BY p.waktu_mulai ASC";
+=======
+            // Murid: semua status aktif milik murid ini
+            sql = "SELECT DISTINCT p.id_pemesanan, p.status_pemesanan, p.waktu_mulai, p.waktu_selesai, p.lokasi_sesi, " +
+                  "m.nama_materi, mp.nama_mapel, " +
+                  "murid.nama_murid, guru.nama_guru " +
+                  "FROM Pemesanan p " +
+                  "JOIN Materi m ON m.id_materi = p.id_materi " +
+                  "JOIN MataPelajaran mp ON mp.id_mapel = m.id_mapel " +
+                  "JOIN Murid murid ON murid.id_murid = p.id_murid " +
+                  "LEFT JOIN Guru guru ON guru.id_guru = p.id_guru " +
+                  "WHERE p.status_pemesanan IN ('menunggu konfirmasi', 'dikonfirmasi', 'berlangsung') " +
+                  "AND p.id_murid = ? " +
+                  "ORDER BY p.waktu_mulai ASC";
+>>>>>>> 71b348a7ff68434109d07d1764316c2a1326b8f5
         } else {
             sql = "SELECT DISTINCT p.id_pemesanan, p.status_pemesanan, p.waktu_mulai, p.waktu_selesai, p.lokasi_sesi, " +
+<<<<<<< HEAD
                     "m.nama_materi, mp.nama_mapel, " +
                     "murid.nama_murid, guru.nama_guru, " +
                     "bayar.biaya_sesi, bayar.biaya_jarak, bayar.nominal, bayar.status_pembayaran " +
@@ -168,6 +184,22 @@ public class HistoryServlet extends HttpServlet {
                     "  OR p.id_guru = ? " +
                     ") " +
                     "ORDER BY p.waktu_mulai ASC";
+=======
+                  "m.nama_materi, mp.nama_mapel, " +
+                  "murid.nama_murid, guru.nama_guru " +
+                  "FROM Pemesanan p " +
+                  "JOIN Materi m ON m.id_materi = p.id_materi " +
+                  "JOIN MataPelajaran mp ON mp.id_mapel = m.id_mapel " +
+                  "JOIN Murid murid ON murid.id_murid = p.id_murid " +
+                  "LEFT JOIN Guru guru ON guru.id_guru = p.id_guru " +
+                  "LEFT JOIN MateriGuru mg ON mg.id_materi = p.id_materi AND mg.id_guru = ? " +
+                  "WHERE p.status_pemesanan IN ('menunggu konfirmasi', 'dikonfirmasi', 'berlangsung') " +
+                  "AND ( " +
+                  "  (p.status_pemesanan = 'menunggu konfirmasi' AND mg.id_guru IS NOT NULL) " +
+                  "  OR p.id_guru = ? " +
+                  ") " +
+                  "ORDER BY p.waktu_mulai ASC";
+>>>>>>> 71b348a7ff68434109d07d1764316c2a1326b8f5
         }
 
         StringBuilder json = new StringBuilder("[");

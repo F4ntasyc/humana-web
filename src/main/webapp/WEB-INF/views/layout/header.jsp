@@ -112,7 +112,8 @@
         .header-actions i { font-size: 1.25rem; cursor: pointer; color: #64748B; transition: color 0.3s; }
         .header-actions i:hover { color: var(--humana-navy); }
         
-        .user-profile { display: flex; align-items: center; gap: 0.85rem; border-left: 1px solid #E2E8F0; padding-left: 1.5rem; }
+        .user-profile { display: flex; align-items: center; gap: 0.85rem; border-left: 1px solid #E2E8F0; padding-left: 1.5rem; text-decoration: none; transition: opacity 0.3s; }
+        .user-profile:hover { opacity: 0.8; }
         .user-info { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2; }
         .user-name { font-weight: 700; font-size: 0.95rem; color: #1E293B; }
         .user-role { font-size: 0.75rem; color: #64748B; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
@@ -165,10 +166,10 @@
         
         <div class="sidebar-footer">
             <c:if test="${sessionScope.userRole == 'MURID'}">
-                <a href="${pageContext.request.contextPath}/profil" class="nav-link-item ${activePage == 'profil' ? 'active' : ''} mb-2"><i class="bi bi-gear"></i> Pengaturan</a>
+                <a href="${pageContext.request.contextPath}/profil" class="nav-link-item ${activePage == 'profil' ? 'active' : ''} mb-2"><i class="bi bi-person"></i> Profile</a>
             </c:if>
             <c:if test="${sessionScope.userRole == 'GURU'}">
-                <a href="${pageContext.request.contextPath}/profil" class="nav-link-item ${activePage == 'profil' ? 'active' : ''} mb-2"><i class="bi bi-gear"></i> Pengaturan</a>
+                <a href="${pageContext.request.contextPath}/profil" class="nav-link-item ${activePage == 'profil' ? 'active' : ''} mb-2"><i class="bi bi-person"></i> Profile</a>
             </c:if>
             <form action="${pageContext.request.contextPath}/auth/logout" method="post" class="m-0">
                 <button type="submit" class="nav-link-item w-100 border-0 bg-transparent text-start">
@@ -184,13 +185,13 @@
             <div class="header-actions w-100 justify-content-end">
                 <a href="#">Bantuan</a>
                 <i class="bi bi-bell"></i>
-                <div class="user-profile">
+                <a href="${pageContext.request.contextPath}/profil" class="user-profile">
                     <div class="user-info">
                         <span class="user-name">${sessionScope.userName}</span>
                         <span class="user-role">${sessionScope.userRole}</span>
                     </div>
                     <div class="user-avatar">${sessionScope.userName.substring(0,1).toUpperCase()}</div>
-                </div>
+                </a>
             </div>
         </header>
         
