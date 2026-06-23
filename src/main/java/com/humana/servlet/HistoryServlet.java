@@ -52,7 +52,8 @@ public class HistoryServlet extends HttpServlet {
 
         String servletPath = req.getServletPath();
         String pathInfo = req.getPathInfo();
-        if (pathInfo == null) pathInfo = "/";
+        if (pathInfo == null)
+            pathInfo = "/";
 
         if ("/jadwal".equals(servletPath)) {
             if ("/konfirmasi".equals(pathInfo)) {
@@ -75,7 +76,10 @@ public class HistoryServlet extends HttpServlet {
         }
     }
 
-    /** Otomatis ubah dikonfirmasi+lunas menjadi berlangsung jika waktu sesi sudah dimulai. */
+    /**
+     * Otomatis ubah dikonfirmasi+lunas menjadi berlangsung jika waktu sesi sudah
+     * dimulai.
+     */
     private void autoTransisiBerlangsung() {
         String sql = "UPDATE Pemesanan p " +
                 "JOIN Pembayaran bay ON bay.id_pemesanan = p.id_pemesanan " +
@@ -84,22 +88,11 @@ public class HistoryServlet extends HttpServlet {
                 "AND bay.status_pembayaran = 'lunas' " +
                 "AND p.waktu_mulai <= NOW()";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private String escapeJson(String str) {
-        if (str == null) return "";
-        return str.replace("\\", "\\\\")
-                .replace("\"", "\\\"")
-                .replace("\b", "\\b")
-                .replace("\f", "\\f")
-                .replace("\n", "\\n")
-                .replace("\r", "\\r")
-                .replace("\t", "\\t");
     }
 
     private boolean isGuruAktif(Connection conn, int idGuru) throws Exception {
@@ -151,7 +144,8 @@ public class HistoryServlet extends HttpServlet {
                     "AND p.id_murid = ? " +
                     "ORDER BY p.waktu_mulai ASC";
         } else {
-            sql = "SELECT DISTINCT p.id_pemesanan, p.status_pemesanan, p.waktu_mulai, p.waktu_selesai, p.lokasi_sesi, " +
+            sql = "SELECT DISTINCT p.id_pemesanan, p.status_pemesanan, p.waktu_mulai, p.waktu_selesai, p.lokasi_sesi, "
+                    +
                     "m.nama_materi, mp.nama_mapel, " +
                     "murid.nama_murid, guru.nama_guru, " +
                     "bayar.biaya_sesi, bayar.biaya_jarak, bayar.nominal, bayar.status_pembayaran " +
@@ -171,7 +165,7 @@ public class HistoryServlet extends HttpServlet {
         }
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, userId);
             if ("GURU".equals(userRole)) {
                 stmt.setInt(2, userId);
@@ -235,7 +229,7 @@ public class HistoryServlet extends HttpServlet {
         sql += "ORDER BY p.waktu_mulai DESC";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, userId);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -311,13 +305,16 @@ public class HistoryServlet extends HttpServlet {
                     try (ResultSet rs = stmt.executeQuery()) {
                         if (!rs.next()) {
                             conn.rollback();
-                            resp.sendRedirect(req.getContextPath() + "/jadwal?error=Permintaan+tidak+valid+atau+sudah+diterima+guru+lain");
+                            resp.sendRedirect(req.getContextPath()
+                                    + "/jadwal?error=Permintaan+tidak+valid+atau+sudah+diterima+guru+lain");
                             return;
                         }
                         Timestamp tsMulai = rs.getTimestamp("waktu_mulai");
                         Timestamp tsSelesai = rs.getTimestamp("waktu_selesai");
-                        if (tsMulai != null) waktuMulai = tsMulai.toLocalDateTime();
-                        if (tsSelesai != null) waktuSelesai = tsSelesai.toLocalDateTime();
+                        if (tsMulai != null)
+                            waktuMulai = tsMulai.toLocalDateTime();
+                        if (tsSelesai != null)
+                            waktuSelesai = tsSelesai.toLocalDateTime();
                     }
                 }
 
@@ -337,7 +334,8 @@ public class HistoryServlet extends HttpServlet {
                 }
 
                 int[] biaya = BiayaUtil.hitungBiayaTanpaJarak(waktuMulai, waktuSelesai);
-                String sqlBayar = "INSERT INTO Pembayaran (id_pemesanan, biaya_sesi, biaya_jarak, nominal, status_pembayaran) " +
+                String sqlBayar = "INSERT INTO Pembayaran (id_pemesanan, biaya_sesi, biaya_jarak, nominal, status_pembayaran) "
+                        +
                         "VALUES (?, ?, ?, ?, 'menunggu')";
                 try (PreparedStatement stmt = conn.prepareStatement(sqlBayar)) {
                     stmt.setInt(1, idPemesanan);
@@ -361,7 +359,10 @@ public class HistoryServlet extends HttpServlet {
         }
     }
 
-    /** Guru melepas sesi sebelum murid bayar — kembali ke pencarian guru (seperti mobile). */
+    /**
+     * Guru melepas sesi sebelum murid bayar — kembali ke pencarian guru (seperti
+     * mobile).
+     */
     private void prosesBatalGuru(HttpServletRequest req, HttpServletResponse resp, HttpSession session)
             throws IOException {
         String userRole = (String) session.getAttribute("userRole");
@@ -400,7 +401,8 @@ public class HistoryServlet extends HttpServlet {
 
                 if (statusBayar != null && "lunas".equals(statusBayar)) {
                     conn.rollback();
-                    resp.sendRedirect(req.getContextPath() + "/jadwal?error=Tidak+dapat+membatalkan+sesi+yang+sudah+dibayar");
+                    resp.sendRedirect(
+                            req.getContextPath() + "/jadwal?error=Tidak+dapat+membatalkan+sesi+yang+sudah+dibayar");
                     return;
                 }
 
@@ -621,16 +623,45 @@ public class HistoryServlet extends HttpServlet {
         public String namaGuru;
         public String statusPembayaran;
 
-        public int getIdPemesanan() { return idPemesanan; }
-        public String getStatusPemesanan() { return statusPemesanan; }
-        public java.sql.Timestamp getWaktuMulai() { return waktuMulai; }
-        public java.sql.Timestamp getWaktuSelesai() { return waktuSelesai; }
-        public String getLokasiSesi() { return lokasiSesi; }
-        public String getNamaMateri() { return namaMateri; }
-        public String getNamaMapel() { return namaMapel; }
-        public String getNamaMurid() { return namaMurid; }
-        public String getNamaGuru() { return namaGuru; }
-        public String getStatusPembayaran() { return statusPembayaran; }
+        public int getIdPemesanan() {
+            return idPemesanan;
+        }
+
+        public String getStatusPemesanan() {
+            return statusPemesanan;
+        }
+
+        public java.sql.Timestamp getWaktuMulai() {
+            return waktuMulai;
+        }
+
+        public java.sql.Timestamp getWaktuSelesai() {
+            return waktuSelesai;
+        }
+
+        public String getLokasiSesi() {
+            return lokasiSesi;
+        }
+
+        public String getNamaMateri() {
+            return namaMateri;
+        }
+
+        public String getNamaMapel() {
+            return namaMapel;
+        }
+
+        public String getNamaMurid() {
+            return namaMurid;
+        }
+
+        public String getNamaGuru() {
+            return namaGuru;
+        }
+
+        public String getStatusPembayaran() {
+            return statusPembayaran;
+        }
     }
 
     public static class HistoriDTO {
@@ -647,17 +678,52 @@ public class HistoryServlet extends HttpServlet {
         public Integer rating;
         public String komentar;
 
-        public int getIdPemesanan() { return idPemesanan; }
-        public String getStatusPemesanan() { return statusPemesanan; }
-        public java.sql.Timestamp getWaktuMulai() { return waktuMulai; }
-        public java.sql.Timestamp getWaktuSelesai() { return waktuSelesai; }
-        public String getNamaMateri() { return namaMateri; }
-        public String getNamaMapel() { return namaMapel; }
-        public String getNamaMurid() { return namaMurid; }
-        public String getNamaGuru() { return namaGuru; }
-        public int getNominal() { return nominal; }
-        public int getDurasiMenit() { return durasiMenit; }
-        public Integer getRating() { return rating; }
-        public String getKomentar() { return komentar; }
+        public int getIdPemesanan() {
+            return idPemesanan;
+        }
+
+        public String getStatusPemesanan() {
+            return statusPemesanan;
+        }
+
+        public java.sql.Timestamp getWaktuMulai() {
+            return waktuMulai;
+        }
+
+        public java.sql.Timestamp getWaktuSelesai() {
+            return waktuSelesai;
+        }
+
+        public String getNamaMateri() {
+            return namaMateri;
+        }
+
+        public String getNamaMapel() {
+            return namaMapel;
+        }
+
+        public String getNamaMurid() {
+            return namaMurid;
+        }
+
+        public String getNamaGuru() {
+            return namaGuru;
+        }
+
+        public int getNominal() {
+            return nominal;
+        }
+
+        public int getDurasiMenit() {
+            return durasiMenit;
+        }
+
+        public Integer getRating() {
+            return rating;
+        }
+
+        public String getKomentar() {
+            return komentar;
+        }
     }
 }
