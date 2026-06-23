@@ -92,16 +92,14 @@ public class HistoryServlet extends HttpServlet {
         String sql;
         if ("MURID".equals(userRole)) {
             // Murid: semua status aktif milik murid ini
-            sql = "SELECT p.id_pemesanan, p.status_pemesanan, p.waktu_mulai, p.waktu_selesai, p.lokasi_sesi, " +
+            sql = "SELECT DISTINCT p.id_pemesanan, p.status_pemesanan, p.waktu_mulai, p.waktu_selesai, p.lokasi_sesi, " +
                   "m.nama_materi, mp.nama_mapel, " +
-                  "murid.nama_murid, guru.nama_guru, " +
-                  "bayar.biaya_sesi, bayar.biaya_jarak, bayar.nominal, bayar.status_pembayaran " +
+                  "murid.nama_murid, guru.nama_guru " +
                   "FROM Pemesanan p " +
                   "JOIN Materi m ON m.id_materi = p.id_materi " +
                   "JOIN MataPelajaran mp ON mp.id_mapel = m.id_mapel " +
                   "JOIN Murid murid ON murid.id_murid = p.id_murid " +
                   "LEFT JOIN Guru guru ON guru.id_guru = p.id_guru " +
-                  "LEFT JOIN Pembayaran bayar ON bayar.id_pemesanan = p.id_pemesanan " +
                   "WHERE p.status_pemesanan IN ('menunggu konfirmasi', 'dikonfirmasi', 'berlangsung') " +
                   "AND p.id_murid = ? " +
                   "ORDER BY p.waktu_mulai ASC";
@@ -109,14 +107,12 @@ public class HistoryServlet extends HttpServlet {
             // Guru: (1) permintaan broadcast yang materinya guru ini bisa ajar, (2) jadwal aktif milik guru
             sql = "SELECT DISTINCT p.id_pemesanan, p.status_pemesanan, p.waktu_mulai, p.waktu_selesai, p.lokasi_sesi, " +
                   "m.nama_materi, mp.nama_mapel, " +
-                  "murid.nama_murid, guru.nama_guru, " +
-                  "bayar.biaya_sesi, bayar.biaya_jarak, bayar.nominal, bayar.status_pembayaran " +
+                  "murid.nama_murid, guru.nama_guru " +
                   "FROM Pemesanan p " +
                   "JOIN Materi m ON m.id_materi = p.id_materi " +
                   "JOIN MataPelajaran mp ON mp.id_mapel = m.id_mapel " +
                   "JOIN Murid murid ON murid.id_murid = p.id_murid " +
                   "LEFT JOIN Guru guru ON guru.id_guru = p.id_guru " +
-                  "LEFT JOIN Pembayaran bayar ON bayar.id_pemesanan = p.id_pemesanan " +
                   "LEFT JOIN MateriGuru mg ON mg.id_materi = p.id_materi AND mg.id_guru = ? " +
                   "WHERE p.status_pemesanan IN ('menunggu konfirmasi', 'dikonfirmasi', 'berlangsung') " +
                   "AND ( " +
