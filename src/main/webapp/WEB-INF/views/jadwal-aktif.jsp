@@ -28,6 +28,13 @@
     <div class="alert-custom alert-danger-custom"><i class="bi bi-exclamation-circle-fill"></i> ${not empty error ? error : param.error}</div>
 </c:if>
 
+<c:if test="${guruNonaktif}">
+    <div class="alert-custom alert-warning-custom">
+        <i class="bi bi-pause-circle-fill"></i>
+        Anda sedang tidak aktif menerima sesi sekarang. Aktifkan status ketersediaan di halaman Profil untuk melihat permintaan murid.
+    </div>
+</c:if>
+
 <%-- ===== TABS ===== --%>
 <style>
     .jadwal-tabs { display: flex; gap: 0; border-bottom: 2px solid #E2E8F0; margin-bottom: 1.5rem; }
@@ -107,31 +114,17 @@
     </c:when>
 </c:choose>
 
-<%-- ===== SHARED CARD RENDERING (JS-based filter) ===== --%>
-<%-- Semua card dirender via JS dari data JSON --%>
-
-<div id="debug-error" style="display:none; margin-top:20px; padding:15px; background:#fee2e2; color:#991b1b; border:1px solid #f87171; border-radius:8px; font-family:monospace; white-space:pre-wrap;"></div>
+<div id="jadwal-panels"></div>
 <script id="jadwal-data" type="application/json">${empty daftarJadwalJson ? '[]' : daftarJadwalJson}</script>
 <script>
     var jadwalData = [];
     try {
-        var rawJson = document.getElementById('jadwal-data').textContent || '[]';
-        jadwalData = JSON.parse(rawJson);
+        jadwalData = JSON.parse(document.getElementById('jadwal-data').textContent || '[]');
     } catch (e) {
-        document.getElementById('debug-error').style.display = 'block';
-        document.getElementById('debug-error').textContent = 'JSON Parse Error: ' + e.message + '\n\nRaw JSON: ' + document.getElementById('jadwal-data').textContent;
         jadwalData = [];
     }
 
     var userRole = '${sessionScope.userRole}';
-    
-    // Catch all global Javascript errors
-    window.addEventListener('error', function(e) {
-        var errDiv = document.getElementById('debug-error');
-        errDiv.style.display = 'block';
-        errDiv.textContent += '\nJS Error: ' + e.message + ' at ' + e.filename + ':' + e.lineno;
-    });
-
     var ctx = '${pageContext.request.contextPath}';
 
     function formatTanggal(dtStr) {
@@ -159,35 +152,54 @@
         return '<span class="badge bg-secondary rounded-pill">' + status + '</span>';
     }
 
+    function isLunas(j) {
+        return j.statusPembayaran && j.statusPembayaran.toLowerCase() === 'lunas';
+    }
+
     function renderActions(j) {
         var html = '';
         if (!j.status) return html;
         var s = j.status.toLowerCase();
-        
+
         if (userRole === 'MURID') {
             if (s === 'menunggu konfirmasi') {
+                html += '<a href="' + ctx + '/pesan/menunggu?id=' + j.idPemesanan + '" class="btn btn-outline-primary btn-sm rounded-pill px-3 me-1">Lihat Status</a>';
                 html += '<button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3" ' +
-                        'onclick="showKonfirmasi(\'Batalkan pesanan ini?\', \'Apakah kamu yakin ingin membatalkan pesanan ini?\', function(){ submitForm(\'' + ctx + '/pesan/batal\', {idPemesanan:' + j.idPemesanan + '}) })">' +
+                        'onclick="showKonfirmasi(\'Batalkan pesanan?\', \'Apakah kamu yakin ingin membatalkan pesanan ini?\', function(){ submitForm(\'' + ctx + '/pesan/batal\', {idPemesanan:' + j.idPemesanan + '}) })">' +
                         'Batalkan</button>';
             } else if (s === 'dikonfirmasi') {
-                html += '<a href="' + ctx + '/bayar?id=' + j.idPemesanan + '" class="btn btn-primary btn-sm rounded-pill px-4">Bayar</a>';
+                if (!isLunas(j)) {
+                    html += '<a href="' + ctx + '/bayar?id=' + j.idPemesanan + '" class="btn btn-primary btn-sm rounded-pill px-4">Bayar</a>';
+                } else {
+                    html += '<span class="badge bg-info rounded-pill px-3 py-2">Menunggu Waktu Sesi</span>';
+                }
             } else if (s === 'berlangsung') {
-                html += '<span class="badge bg-success rounded-pill px-3 py-2 align-self-center">Sedang Berlangsung</span>';
+                html += '<span class="badge bg-success rounded-pill px-3 py-2">Sedang Berlangsung</span>';
             }
         } else if (userRole === 'GURU') {
             if (s === 'menunggu konfirmasi') {
                 html += '<button type="button" class="btn btn-success btn-sm rounded-pill px-3" ' +
                         'onclick="showKonfirmasi(\'Terima permintaan?\', \'Kamu akan menerima sesi belajar dari murid ini. Lanjutkan?\', function(){ submitForm(\'' + ctx + '/jadwal/konfirmasi\', {idPemesanan:' + j.idPemesanan + ', aksi:\'terima\'}) })">' +
-                        'Terima</button> ' +
-                        '<button type="button" class="btn btn-danger btn-sm rounded-pill px-3" ' +
-                        'onclick="showKonfirmasi(\'Tolak permintaan?\', \'Kamu akan menolak permintaan sesi ini. Tindakan ini tidak bisa dibatalkan.\', function(){ submitForm(\'' + ctx + '/jadwal/konfirmasi\', {idPemesanan:' + j.idPemesanan + ', aksi:\'tolak\'}) }, true)">' +
-                        'Tolak</button>';
+                        'Terima</button>';
             } else if (s === 'dikonfirmasi') {
-                html += '<button type="button" class="btn btn-primary btn-sm rounded-pill px-3" ' +
-                        'onclick="showKonfirmasi(\'Selesaikan sesi?\', \'Tandai sesi ini sebagai selesai? Pastikan sesi sudah benar-benar berlangsung.\', function(){ submitForm(\'' + ctx + '/jadwal/selesai\', {idPemesanan:' + j.idPemesanan + '}) })">' +
-                        'Selesaikan Sesi</button>';
+                html += '<button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 me-1" ' +
+                        'onclick="showKonfirmasi(\'Batalkan sesi?\', \'Sesi akan dikembalikan ke pencarian guru. Murid akan mencari guru lain.\', function(){ submitForm(\'' + ctx + '/jadwal/batal-guru\', {idPemesanan:' + j.idPemesanan + '}) }, true)">' +
+                        'Batalkan Sesi</button>';
+                if (isLunas(j)) {
+                    html += '<button type="button" class="btn btn-primary btn-sm rounded-pill px-3" ' +
+                            'onclick="showKonfirmasi(\'Selesaikan sesi?\', \'Tandai sesi ini sebagai selesai?\', function(){ submitForm(\'' + ctx + '/jadwal/selesai\', {idPemesanan:' + j.idPemesanan + '}) })">' +
+                            'Selesaikan Sesi</button>';
+                } else {
+                    html += '<button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" disabled title="Menunggu pembayaran murid">Selesaikan Sesi</button>';
+                }
             } else if (s === 'berlangsung') {
-                html += '<span class="badge bg-success rounded-pill px-3 py-2 align-self-center">Berlangsung</span>';
+                if (isLunas(j)) {
+                    html += '<button type="button" class="btn btn-primary btn-sm rounded-pill px-3" ' +
+                            'onclick="showKonfirmasi(\'Selesaikan sesi?\', \'Tandai sesi ini sebagai selesai?\', function(){ submitForm(\'' + ctx + '/jadwal/selesai\', {idPemesanan:' + j.idPemesanan + '}) })">' +
+                            'Selesaikan Sesi</button>';
+                } else {
+                    html += '<button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" disabled title="Menunggu pembayaran murid">Selesaikan Sesi</button>';
+                }
             }
         }
         return html;

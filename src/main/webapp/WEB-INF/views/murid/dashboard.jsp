@@ -6,6 +6,10 @@
 <c:set var="activePage" value="dashboard" />
 <jsp:include page="/WEB-INF/views/layout/header.jsp" />
 
+<c:if test="${not empty error}">
+    <div class="alert-custom alert-danger-custom"><i class="bi bi-exclamation-circle-fill"></i> ${error}</div>
+</c:if>
+
 <style>
     .dashboard-banner {
         background-color: var(--humana-navy);
@@ -135,6 +139,12 @@
     .stat-blue { background: #EFF6FF; color: #3B82F6; }
     .stat-green { background: #ECFDF5; color: #10B981; }
     .stat-gray { background: #F8FAFC; color: #64748B; }
+    .rek-card {
+        border: 1px solid #E2E8F0; border-radius: 12px; padding: 1rem 1.25rem;
+        text-decoration: none; color: inherit; display: block; transition: all 0.2s;
+        background: white;
+    }
+    .rek-card:hover { border-color: var(--humana-teal); box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
 </style>
 
 <div class="dashboard-banner">
@@ -205,6 +215,22 @@
         </a>
     </div>
 </div>
+
+<c:if test="${not empty rekomendasiList}">
+<div class="mb-5">
+    <h5 class="section-title">Rekomendasi Materi</h5>
+    <div class="row g-3">
+        <c:forEach items="${rekomendasiList}" var="rek">
+            <div class="col-md-4">
+                <a href="${pageContext.request.contextPath}/materi/detail?id=${rek.idMateri}" class="rek-card h-100">
+                    <div class="fw-bold text-dark mb-1">${rek.namaMateri}</div>
+                    <div class="text-secondary small">${rek.namaMapel} &middot; ${rek.jenjang} Kelas ${rek.kelas}</div>
+                </a>
+            </div>
+        </c:forEach>
+    </div>
+</div>
+</c:if>
 
 <div class="row g-4 mt-2">
     <div class="col-12">

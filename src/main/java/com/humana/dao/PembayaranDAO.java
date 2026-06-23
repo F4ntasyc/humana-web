@@ -31,7 +31,7 @@ public class PembayaranDAO {
     }
 
     public Pembayaran findById(int id) {
-        String sql = "SELECT * FROM pembayaran WHERE id_pembayaran = ?";
+        String sql = "SELECT * FROM Pembayaran WHERE id_pembayaran = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -48,7 +48,7 @@ public class PembayaranDAO {
     }
 
     public Pembayaran findByPemesananId(int idPemesanan) {
-        String sql = "SELECT * FROM pembayaran WHERE id_pemesanan = ?";
+        String sql = "SELECT * FROM Pembayaran WHERE id_pemesanan = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -65,7 +65,7 @@ public class PembayaranDAO {
     }
 
     public List<Pembayaran> findAll() {
-        String sql = "SELECT * FROM pembayaran";
+        String sql = "SELECT * FROM Pembayaran";
         List<Pembayaran> list = new ArrayList<>();
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -81,7 +81,7 @@ public class PembayaranDAO {
     }
 
     public boolean insert(Pembayaran p) {
-        String sql = "INSERT INTO pembayaran (id_pemesanan, biaya_sesi, biaya_jarak, "
+        String sql = "INSERT INTO Pembayaran (id_pemesanan, biaya_sesi, biaya_jarak, "
                    + "nominal, metode_pembayaran, status_pembayaran, tanggal_pembayaran) "
                    + "VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
@@ -112,7 +112,7 @@ public class PembayaranDAO {
     }
 
     public boolean updateStatus(int idPembayaran, String statusBaru, String metodePembayaran) {
-        String sql = "UPDATE pembayaran SET status_pembayaran = ?, metode_pembayaran = ?, "
+        String sql = "UPDATE Pembayaran SET status_pembayaran = ?, metode_pembayaran = ?, "
                    + "tanggal_pembayaran = ? WHERE id_pembayaran = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -130,7 +130,7 @@ public class PembayaranDAO {
     }
 
     public boolean delete(int id) {
-        String sql = "DELETE FROM pembayaran WHERE id_pembayaran = ?";
+        String sql = "DELETE FROM Pembayaran WHERE id_pembayaran = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 

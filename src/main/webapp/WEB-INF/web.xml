@@ -43,6 +43,11 @@
         <servlet-class>com.humana.servlet.PendapatanServlet</servlet-class>
     </servlet>
 
+    <servlet>
+        <servlet-name>PendapatanHalamanServlet</servlet-name>
+        <servlet-class>com.humana.servlet.PendapatanHalamanServlet</servlet-class>
+    </servlet>
+
     <!-- Servlet Mappings -->
     <servlet-mapping>
         <servlet-name>AuthServlet</servlet-name>
@@ -102,5 +107,10 @@
         <error-code>500</error-code>
         <location>/WEB-INF/views/error/500.jsp</location>
     </error-page>
+
+    <servlet-mapping>
+        <servlet-name>PendapatanHalamanServlet</servlet-name>
+        <url-pattern>/guru/pendapatan</url-pattern>
+    </servlet-mapping>
 
 </web-app>

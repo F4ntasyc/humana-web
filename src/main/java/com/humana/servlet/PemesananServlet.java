@@ -44,6 +44,8 @@ public class PemesananServlet extends HttpServlet {
         String pathInfo = req.getPathInfo();
         if (pathInfo == null || "/".equals(pathInfo)) {
             tampilkanFormPesan(req, resp);
+        } else if ("/menunggu".equals(pathInfo)) {
+            tampilkanMenungguGuru(req, resp, session);
         } else {
             resp.sendRedirect(req.getContextPath() + "/pesan");
         }
@@ -62,7 +64,7 @@ public class PemesananServlet extends HttpServlet {
         if ("/tambah".equals(pathInfo)) {
             tambahPemesanan(req, resp);
         } else if ("/batal".equals(pathInfo)) {
-            batalPemesanan(req, resp);
+            batalPemesanan(req, resp, session);
         } else {
             resp.sendRedirect(req.getContextPath() + "/pesan");
         }
@@ -71,10 +73,10 @@ public class PemesananServlet extends HttpServlet {
     private void tampilkanFormPesan(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         String idMateri = req.getParameter("idMateri");
-        
+
         List<MateriDTO> daftarMateri = new ArrayList<>();
         String sqlMateri = "SELECT m.id_materi, m.nama_materi, m.kelas, mp.nama_mapel " +
-                           "FROM Materi m JOIN MataPelajaran mp ON m.id_mapel = mp.id_mapel";
+                "FROM Materi m JOIN MataPelajaran mp ON m.id_mapel = mp.id_mapel";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sqlMateri);
              ResultSet rs = stmt.executeQuery()) {
@@ -88,6 +90,7 @@ public class PemesananServlet extends HttpServlet {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            req.setAttribute("error", "Gagal memuat daftar materi.");
         }
 
         req.setAttribute("daftarMateri", daftarMateri);
@@ -96,6 +99,65 @@ public class PemesananServlet extends HttpServlet {
         }
         req.setAttribute("activePage", "pesan");
         req.getRequestDispatcher("/WEB-INF/views/murid/pesan.jsp").forward(req, resp);
+    }
+
+    /**
+     * Halaman menunggu konfirmasi guru — meta refresh setiap 3 detik (tanpa polling JS).
+     */
+    private void tampilkanMenungguGuru(HttpServletRequest req, HttpServletResponse resp, HttpSession session)
+            throws ServletException, IOException {
+        int idMurid = (int) session.getAttribute("userId");
+        String idStr = req.getParameter("id");
+        if (idStr == null || idStr.isBlank()) {
+            resp.sendRedirect(req.getContextPath() + "/jadwal");
+            return;
+        }
+
+        try (Connection conn = DBConnection.getConnection()) {
+            String sql = "SELECT p.id_pemesanan, p.status_pemesanan, p.waktu_mulai, p.waktu_selesai, " +
+                    "m.nama_materi, mp.nama_mapel, g.nama_guru " +
+                    "FROM Pemesanan p " +
+                    "JOIN Materi m ON m.id_materi = p.id_materi " +
+                    "JOIN MataPelajaran mp ON mp.id_mapel = m.id_mapel " +
+                    "LEFT JOIN Guru g ON g.id_guru = p.id_guru " +
+                    "WHERE p.id_pemesanan = ? AND p.id_murid = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setInt(1, Integer.parseInt(idStr));
+                stmt.setInt(2, idMurid);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (!rs.next()) {
+                        resp.sendRedirect(req.getContextPath() + "/jadwal?error=Pesanan+tidak+ditemukan");
+                        return;
+                    }
+                    String status = rs.getString("status_pemesanan");
+                    if ("dikonfirmasi".equals(status)) {
+                        resp.sendRedirect(req.getContextPath() + "/bayar?id=" + idStr);
+                        return;
+                    }
+                    if ("dibatalkan".equals(status)) {
+                        resp.sendRedirect(req.getContextPath() + "/pesan?error=Permintaan+dibatalkan");
+                        return;
+                    }
+                    if (!"menunggu konfirmasi".equals(status)) {
+                        resp.sendRedirect(req.getContextPath() + "/jadwal");
+                        return;
+                    }
+                    req.setAttribute("idPemesanan", rs.getInt("id_pemesanan"));
+                    req.setAttribute("namaMateri", rs.getString("nama_materi"));
+                    req.setAttribute("namaMapel", rs.getString("nama_mapel"));
+                    req.setAttribute("waktuMulai", rs.getTimestamp("waktu_mulai"));
+                    req.setAttribute("waktuSelesai", rs.getTimestamp("waktu_selesai"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.sendRedirect(req.getContextPath() + "/jadwal?error=Terjadi+kesalahan");
+            return;
+        }
+
+        req.setAttribute("activePage", "pesan");
+        resp.setHeader("Refresh", "3;url=" + req.getContextPath() + "/pesan/menunggu?id=" + idStr);
+        req.getRequestDispatcher("/WEB-INF/views/murid/menunggu-guru.jsp").forward(req, resp);
     }
 
     private void tambahPemesanan(HttpServletRequest req, HttpServletResponse resp)
@@ -113,12 +175,11 @@ public class PemesananServlet extends HttpServlet {
         String waktuSelesaiStr = req.getParameter("waktuSelesai");
         String lokasiSesi = req.getParameter("lokasiSesi");
 
-        if (idMateriStr == null || idMateriStr.trim().isEmpty() ||
-            waktuMulaiStr == null || waktuMulaiStr.trim().isEmpty() ||
-            waktuSelesaiStr == null || waktuSelesaiStr.trim().isEmpty() ||
-            lokasiSesi == null || lokasiSesi.trim().isEmpty()) {
-            
-            req.setAttribute("error", "Harap isi semua field yang diperlukan.");
+        if (idMateriStr == null || idMateriStr.trim().isEmpty()
+                || waktuMulaiStr == null || waktuMulaiStr.trim().isEmpty()
+                || waktuSelesaiStr == null || waktuSelesaiStr.trim().isEmpty()
+                || lokasiSesi == null || lokasiSesi.trim().isEmpty()) {
+            req.setAttribute("error", "Harap isi semua field yang diperlukan (materi, jadwal, dan lokasi).");
             tampilkanFormPesan(req, resp);
             return;
         }
@@ -134,53 +195,36 @@ public class PemesananServlet extends HttpServlet {
             }
 
             long menit = Duration.between(mulai, selesai).toMinutes();
-            // Rp 15.000 per 30 menit
-            int jumlahSesi = (int) Math.ceil(menit / 30.0);
-            int biayaSesi = jumlahSesi * 15000;
+            if (menit < 60) {
+                req.setAttribute("error", "Durasi sesi minimal 1 jam.");
+                tampilkanFormPesan(req, resp);
+                return;
+            }
 
+            int idPemesananBaru;
             try (Connection conn = DBConnection.getConnection()) {
-                conn.setAutoCommit(false);
-                try {
-                    String sqlPemesanan = "INSERT INTO Pemesanan (id_murid, id_materi, status_pemesanan, " +
-                                          "waktu_mulai, waktu_selesai, lokasi_sesi) " +
-                                          "VALUES (?, ?, 'menunggu konfirmasi', ?, ?, ?)";
-                    
-                    int idPemesananBaru = -1;
-                    try (PreparedStatement stmt = conn.prepareStatement(sqlPemesanan, Statement.RETURN_GENERATED_KEYS)) {
-                        stmt.setInt(1, idMurid);
-                        stmt.setInt(2, Integer.parseInt(idMateriStr));
-                        stmt.setTimestamp(3, Timestamp.valueOf(mulai));
-                        stmt.setTimestamp(4, Timestamp.valueOf(selesai));
-                        stmt.setString(5, lokasiSesi);
-                        stmt.executeUpdate();
-                        
-                        try (ResultSet rs = stmt.getGeneratedKeys()) {
-                            if (rs.next()) {
-                                idPemesananBaru = rs.getInt(1);
-                            }
-                        }
-                    }
+                String sqlPemesanan = "INSERT INTO Pemesanan (id_murid, id_materi, status_pemesanan, " +
+                        "waktu_mulai, waktu_selesai, lokasi_sesi) " +
+                        "VALUES (?, ?, 'menunggu konfirmasi', ?, ?, ?)";
 
-                    if (idPemesananBaru != -1) {
-                        String sqlPembayaran = "INSERT INTO Pembayaran (id_pemesanan, biaya_sesi, biaya_jarak, " +
-                                               "nominal, status_pembayaran) VALUES (?, ?, 0, ?, 'menunggu')";
-                        try (PreparedStatement stmt = conn.prepareStatement(sqlPembayaran)) {
-                            stmt.setInt(1, idPemesananBaru);
-                            stmt.setInt(2, biayaSesi);
-                            stmt.setInt(3, biayaSesi);
-                            stmt.executeUpdate();
-                        }
-                    }
+                try (PreparedStatement stmt = conn.prepareStatement(sqlPemesanan, Statement.RETURN_GENERATED_KEYS)) {
+                    stmt.setInt(1, idMurid);
+                    stmt.setInt(2, Integer.parseInt(idMateriStr));
+                    stmt.setTimestamp(3, Timestamp.valueOf(mulai));
+                    stmt.setTimestamp(4, Timestamp.valueOf(selesai));
+                    stmt.setString(5, lokasiSesi.trim());
+                    stmt.executeUpdate();
 
-                    conn.commit();
-                    resp.sendRedirect(req.getContextPath() + "/jadwal?sukses=1");
-                } catch (Exception e) {
-                    conn.rollback();
-                    throw e;
-                } finally {
-                    conn.setAutoCommit(true);
+                    try (ResultSet rs = stmt.getGeneratedKeys()) {
+                        if (!rs.next()) {
+                            throw new RuntimeException("Gagal mendapatkan ID pemesanan baru.");
+                        }
+                        idPemesananBaru = rs.getInt(1);
+                    }
                 }
             }
+
+            resp.sendRedirect(req.getContextPath() + "/pesan/menunggu?id=" + idPemesananBaru);
 
         } catch (DateTimeParseException e) {
             req.setAttribute("error", "Format waktu tidak valid.");
@@ -192,8 +236,9 @@ public class PemesananServlet extends HttpServlet {
         }
     }
 
-    private void batalPemesanan(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    private void batalPemesanan(HttpServletRequest req, HttpServletResponse resp, HttpSession session)
+            throws IOException {
+        int idMurid = (int) session.getAttribute("userId");
         String idPemesananStr = req.getParameter("idPemesanan");
         if (idPemesananStr == null || idPemesananStr.trim().isEmpty()) {
             resp.sendRedirect(req.getContextPath() + "/jadwal");
@@ -201,26 +246,50 @@ public class PemesananServlet extends HttpServlet {
         }
 
         try (Connection conn = DBConnection.getConnection()) {
-            String sqlCheck = "SELECT status_pemesanan FROM Pemesanan WHERE id_pemesanan = ?";
-            String status = null;
-            try (PreparedStatement stmt = conn.prepareStatement(sqlCheck)) {
-                stmt.setInt(1, Integer.parseInt(idPemesananStr));
-                try (ResultSet rs = stmt.executeQuery()) {
-                    if (rs.next()) {
-                        status = rs.getString("status_pemesanan");
+            conn.setAutoCommit(false);
+            try {
+                String sqlCheck = "SELECT status_pemesanan, id_murid FROM Pemesanan WHERE id_pemesanan = ?";
+                String status = null;
+                int pemesananMurid = -1;
+                try (PreparedStatement stmt = conn.prepareStatement(sqlCheck)) {
+                    stmt.setInt(1, Integer.parseInt(idPemesananStr));
+                    try (ResultSet rs = stmt.executeQuery()) {
+                        if (rs.next()) {
+                            status = rs.getString("status_pemesanan");
+                            pemesananMurid = rs.getInt("id_murid");
+                        }
                     }
                 }
-            }
 
-            if ("menunggu konfirmasi".equals(status)) {
-                String sqlDelete = "DELETE FROM Pemesanan WHERE id_pemesanan = ? AND status_pemesanan = 'menunggu konfirmasi'";
-                try (PreparedStatement stmt = conn.prepareStatement(sqlDelete)) {
-                    stmt.setInt(1, Integer.parseInt(idPemesananStr));
-                    stmt.executeUpdate();
+                if (pemesananMurid != idMurid) {
+                    resp.sendRedirect(req.getContextPath() + "/jadwal?error=Akses+ditolak");
+                    return;
                 }
-                resp.sendRedirect(req.getContextPath() + "/jadwal?batal=1");
-            } else {
-                resp.sendRedirect(req.getContextPath() + "/jadwal?error=Status+tidak+valid");
+
+                if ("menunggu konfirmasi".equals(status)) {
+                    int idPemesanan = Integer.parseInt(idPemesananStr);
+                    try (PreparedStatement stmt = conn.prepareStatement(
+                            "DELETE FROM Pembayaran WHERE id_pemesanan = ?")) {
+                        stmt.setInt(1, idPemesanan);
+                        stmt.executeUpdate();
+                    }
+                    try (PreparedStatement stmt = conn.prepareStatement(
+                            "DELETE FROM Pemesanan WHERE id_pemesanan = ? AND id_murid = ? AND status_pemesanan = 'menunggu konfirmasi'")) {
+                        stmt.setInt(1, idPemesanan);
+                        stmt.setInt(2, idMurid);
+                        stmt.executeUpdate();
+                    }
+                    conn.commit();
+                    resp.sendRedirect(req.getContextPath() + "/jadwal?batal=1");
+                } else {
+                    conn.rollback();
+                    resp.sendRedirect(req.getContextPath() + "/jadwal?error=Status+tidak+valid+untuk+dibatalkan");
+                }
+            } catch (Exception e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -233,7 +302,7 @@ public class PemesananServlet extends HttpServlet {
         public String namaMateri;
         public int kelas;
         public String namaMapel;
-        
+
         public int getIdMateri() { return idMateri; }
         public String getNamaMateri() { return namaMateri; }
         public int getKelas() { return kelas; }

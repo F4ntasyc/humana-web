@@ -23,7 +23,7 @@ public class FeedbackDAO {
     }
 
     public Feedback findById(int id) {
-        String sql = "SELECT * FROM feedback WHERE id_feedback = ?";
+        String sql = "SELECT * FROM Feedback WHERE id_feedback = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -40,7 +40,7 @@ public class FeedbackDAO {
     }
 
     public Feedback findByPemesananId(int idPemesanan) {
-        String sql = "SELECT * FROM feedback WHERE id_pemesanan = ?";
+        String sql = "SELECT * FROM Feedback WHERE id_pemesanan = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -57,7 +57,7 @@ public class FeedbackDAO {
     }
 
     public List<Feedback> findByGuruId(int idGuru) {
-        String sql = "SELECT f.* FROM feedback f "
+        String sql = "SELECT f.* FROM Feedback f "
                    + "JOIN pemesanan p ON f.id_pemesanan = p.id_pemesanan "
                    + "WHERE p.id_guru = ?";
         List<Feedback> list = new ArrayList<>();
@@ -77,7 +77,7 @@ public class FeedbackDAO {
     }
 
     public List<Feedback> findAll() {
-        String sql = "SELECT * FROM feedback";
+        String sql = "SELECT * FROM Feedback";
         List<Feedback> list = new ArrayList<>();
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -93,7 +93,7 @@ public class FeedbackDAO {
     }
 
     public boolean insert(Feedback f) {
-        String sql = "INSERT INTO feedback (id_pemesanan, komentar, rating) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO Feedback (id_pemesanan, komentar, rating) VALUES (?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -117,7 +117,7 @@ public class FeedbackDAO {
     }
 
     public boolean delete(int id) {
-        String sql = "DELETE FROM feedback WHERE id_feedback = ?";
+        String sql = "DELETE FROM Feedback WHERE id_feedback = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 

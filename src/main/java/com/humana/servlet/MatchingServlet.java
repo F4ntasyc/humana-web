@@ -187,16 +187,26 @@ public class MatchingServlet extends HttpServlet {
                 stmt.executeUpdate();
             }
 
-            // 2. Insert pembayaran
-            String insertSql = "INSERT INTO Pembayaran (id_pemesanan, biaya_sesi, biaya_jarak, "
-                    + "metode_pembayaran, nominal, status_pembayaran) "
-                    + "VALUES (?, ?, ?, 'menunggu', ?, 'menunggu')";
-            try (PreparedStatement stmt = conn.prepareStatement(insertSql)) {
-                stmt.setInt(1, Integer.parseInt(idPemesanan));
-                stmt.setInt(2, biayaSesiStr != null ? Integer.parseInt(biayaSesiStr) : 0);
-                stmt.setInt(3, biayaJarakStr != null ? Integer.parseInt(biayaJarakStr) : 0);
-                stmt.setInt(4, Integer.parseInt(totalStr));
-                stmt.executeUpdate();
+            // 2. Insert pembayaran hanya jika belum ada (selaras alur mobile)
+            boolean sudahAdaBayar = false;
+            try (PreparedStatement check = conn.prepareStatement(
+                    "SELECT 1 FROM Pembayaran WHERE id_pemesanan = ?")) {
+                check.setInt(1, Integer.parseInt(idPemesanan));
+                try (ResultSet rs = check.executeQuery()) {
+                    sudahAdaBayar = rs.next();
+                }
+            }
+            if (!sudahAdaBayar) {
+                String insertSql = "INSERT INTO Pembayaran (id_pemesanan, biaya_sesi, biaya_jarak, "
+                        + "metode_pembayaran, nominal, status_pembayaran) "
+                        + "VALUES (?, ?, ?, 'menunggu', ?, 'menunggu')";
+                try (PreparedStatement stmt = conn.prepareStatement(insertSql)) {
+                    stmt.setInt(1, Integer.parseInt(idPemesanan));
+                    stmt.setInt(2, biayaSesiStr != null ? Integer.parseInt(biayaSesiStr) : 0);
+                    stmt.setInt(3, biayaJarakStr != null ? Integer.parseInt(biayaJarakStr) : 0);
+                    stmt.setInt(4, Integer.parseInt(totalStr));
+                    stmt.executeUpdate();
+                }
             }
 
             out.print("{\"success\":true,\"message\":\"Sesi berhasil diterima, tagihan pembayaran telah dibuat.\"}");

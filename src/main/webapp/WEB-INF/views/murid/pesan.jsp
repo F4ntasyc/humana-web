@@ -34,7 +34,6 @@
     <div class="card-body p-4 p-md-5">
         <form action="${pageContext.request.contextPath}/pesan/tambah" method="post" id="formPesan">
 
-            <h5 class="fw-bold mb-3 mt-2" style="color: #1E293B;">1. Pilih Materi</h5>
             <div class="mb-4">
                 <label for="idMateri" class="form-label fw-semibold text-secondary" style="font-size: 0.875rem;">Materi <span class="text-danger">*</span></label>
                 <select name="idMateri" id="idMateri" class="form-select form-input" required style="border-radius: 0.75rem;">
@@ -46,8 +45,6 @@
                     </c:forEach>
                 </select>
             </div>
-
-            <h5 class="fw-bold mb-3 mt-4 pt-3 border-top" style="color: #1E293B;">2. Jadwal</h5>
 
             <%-- Baris 1: Tanggal --%>
             <div class="date-row">
@@ -77,31 +74,23 @@
             <input type="hidden" id="waktuMulai" name="waktuMulai">
             <input type="hidden" id="waktuSelesai" name="waktuSelesai">
 
-            <h5 class="fw-bold mb-3 mt-4 pt-3 border-top" style="color: #1E293B;">3. Lokasi</h5>
-            <div class="mb-4">
-                <label for="lokasiSesi" class="form-label fw-semibold text-secondary" style="font-size: 0.875rem;">Alamat Lengkap <span class="text-danger">*</span></label>
+            <div class="mb-4 mt-4 pt-3 border-top">
+                <label for="lokasiSesi" class="form-label fw-semibold text-secondary" style="font-size: 0.875rem;">Alamat Temu<span class="text-danger">*</span></label>
                 <textarea class="form-input form-control" id="lokasiSesi" name="lokasiSesi" rows="4" placeholder="Masukkan alamat lengkap (termasuk kelurahan, kecamatan, dll)" required style="border-radius: 0.75rem;"></textarea>
             </div>
 
-            <h5 class="fw-bold mb-3 mt-4 pt-3 border-top" style="color: #1E293B;">4. Estimasi Biaya</h5>
-            <div class="mb-4 p-4 rounded-3" style="background-color: #F8FAFC; border: 1px solid #E2E8F0;">
+            <div class="mb-2 p-4 rounded-3 mt-4 pt-3 border-top" style="background-color: #F8FAFC; border: 1px solid #E2E8F0;">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="text-secondary fw-semibold">Biaya Sesi (<span id="durasiLabel">0</span> sesi × Rp 15.000):</span>
-                    <span class="fw-bold fs-5 text-primary" id="estimasiBiayaSesi">Rp 0</span>
+                    <span class="text-secondary fw-semibold">Biaya Sesi (<span id="durasiLabel">1</span> jam × Rp 30.000):</span>
+                    <span class="fw-bold fs-5 text-primary" id="estimasiBiayaSesi">Rp 30.000</span>
                 </div>
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="text-secondary fw-semibold">Estimasi Biaya Transport (±3 km × Rp 3.000):</span>
-                    <span class="fw-bold text-secondary">Rp 9.000</span>
-                </div>
-                <hr class="my-2">
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="fw-bold text-dark">Estimasi Total:</span>
-                    <span class="fw-bold fs-5" style="color: #1E365C;" id="estimasiTotal">Rp 9.000</span>
-                </div>
-                <div class="text-muted mt-2" style="font-size: 0.8rem;">
-                    * Biaya transport aktual dihitung oleh guru setelah mengkonfirmasi pesanan.
+                <div class="text-muted" style="font-size: 0.85rem;">
+                    * Biaya transport dihitung setelah guru menerima permintaan (bergantung jarak guru ke lokasi Anda).
                 </div>
             </div>
+            <p id="formHint" class="text-muted small mt-2 mb-0">
+                <i class="bi bi-info-circle me-1"></i>Lengkapi materi, tanggal, waktu (min. 1 jam), dan alamat untuk mengaktifkan tombol kirim.
+            </p>
 
             <div class="text-end pt-3">
                 <button type="submit" class="btn btn-primary px-4 py-2 shadow-sm" id="btnKirim" disabled style="border-radius: 0.75rem; font-weight: 600; background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%); border: none; opacity: 0.6; cursor: not-allowed;">
@@ -160,14 +149,14 @@
     })();
 
     // ===== Update Waktu Selesai berdasarkan Waktu Mulai =====
+    var BIAYA_PER_JAM = 30000;
+
     function updateWaktuSelesai() {
         var mulaiTime = document.getElementById('waktuMulaiTime').value;
         var selesaiSel = document.getElementById('waktuSelesaiTime');
 
-        // Reset estimasi
-        document.getElementById('estimasiBiayaSesi').textContent = 'Rp 0';
-        document.getElementById('estimasiTotal').textContent = 'Rp 9.000';
-        document.getElementById('durasiLabel').textContent = '0';
+        document.getElementById('estimasiBiayaSesi').textContent = formatRupiah(BIAYA_PER_JAM);
+        document.getElementById('durasiLabel').textContent = '1';
 
         if (!mulaiTime) {
             selesaiSel.innerHTML = '<option value="">-- Pilih waktu mulai dulu --</option>';
@@ -218,18 +207,12 @@
         checkFormReady();
     }
 
-    // ===== Hitung Estimasi Biaya =====
-    // Rp 15.000 per 30 menit, Rp 3.000/km estimasi 3km
-    var BIAYA_PER_30_MENIT = 15000;
-    var BIAYA_TRANSPORT_ESTIMASI = 9000; // 3km x 3000
-
     function hitungEstimasiBiaya() {
         updateHiddenInputs();
 
         var mulaiTime = document.getElementById('waktuMulaiTime').value;
         var selesaiTime = document.getElementById('waktuSelesaiTime').value;
         var elBiayaSesi = document.getElementById('estimasiBiayaSesi');
-        var elTotal = document.getElementById('estimasiTotal');
         var elDurasi = document.getElementById('durasiLabel');
 
         if (mulaiTime && selesaiTime) {
@@ -238,19 +221,15 @@
             var diffMenit = selesaiMin - mulaiMin;
 
             if (diffMenit > 0) {
-                var jumlahSesi = diffMenit / 30; // berapa sesi 30 menit
-                var biayaSesi = jumlahSesi * BIAYA_PER_30_MENIT;
-                var total = biayaSesi + BIAYA_TRANSPORT_ESTIMASI;
-
-                elDurasi.textContent = jumlahSesi;
+                var totalJam = Math.max(1, diffMenit / 60);
+                var biayaSesi = Math.round(totalJam * BIAYA_PER_JAM);
+                elDurasi.textContent = totalJam % 1 === 0 ? totalJam : totalJam.toFixed(1);
                 elBiayaSesi.textContent = formatRupiah(biayaSesi);
-                elTotal.textContent = formatRupiah(total);
                 return;
             }
         }
-        elDurasi.textContent = '0';
-        elBiayaSesi.textContent = 'Rp 0';
-        elTotal.textContent = formatRupiah(BIAYA_TRANSPORT_ESTIMASI);
+        elDurasi.textContent = '1';
+        elBiayaSesi.textContent = formatRupiah(BIAYA_PER_JAM);
     }
 
     function timeToMinutes(timeStr) {
@@ -264,14 +243,23 @@
 
     // ===== Enable submit button only when form is valid =====
     function checkFormReady() {
+        var materi = document.getElementById('idMateri').value;
         var tanggal = document.getElementById('tanggalSesi').value;
         var mulai = document.getElementById('waktuMulaiTime').value;
         var selesai = document.getElementById('waktuSelesaiTime').value;
+        var lokasi = document.getElementById('lokasiSesi').value.trim();
         var btn = document.getElementById('btnKirim');
-        var ready = tanggal && mulai && selesai;
+        var hint = document.getElementById('formHint');
+        var ready = materi && tanggal && mulai && selesai && lokasi.length > 0;
         btn.disabled = !ready;
         btn.style.opacity = ready ? '1' : '0.6';
         btn.style.cursor = ready ? 'pointer' : 'not-allowed';
+        if (hint) {
+            hint.style.color = ready ? '#059669' : '#64748B';
+            hint.innerHTML = ready
+                ? '<i class="bi bi-check-circle me-1"></i>Form siap dikirim.'
+                : '<i class="bi bi-info-circle me-1"></i>Lengkapi materi, tanggal, waktu (min. 1 jam), dan alamat untuk mengaktifkan tombol kirim.';
+        }
     }
 
     // Set tanggal minimum ke hari ini
@@ -290,6 +278,9 @@
     document.getElementById('waktuSelesaiTime').addEventListener('change', function() {
         hitungEstimasiBiaya();
     });
+    document.getElementById('idMateri').addEventListener('change', checkFormReady);
+    document.getElementById('lokasiSesi').addEventListener('input', checkFormReady);
+    document.getElementById('tanggalSesi').addEventListener('change', checkFormReady);
 </script>
 
 <jsp:include page="/WEB-INF/views/layout/footer.jsp" />

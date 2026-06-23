@@ -36,7 +36,7 @@ public class PemesananDAO {
     }
 
     public Pemesanan findById(int id) {
-        String sql = "SELECT * FROM pemesanan WHERE id_pemesanan = ?";
+        String sql = "SELECT * FROM Pemesanan WHERE id_pemesanan = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -53,7 +53,7 @@ public class PemesananDAO {
     }
 
     public List<Pemesanan> findByMuridId(int idMurid) {
-        String sql = "SELECT * FROM pemesanan WHERE id_murid = ? ORDER BY waktu_mulai DESC";
+        String sql = "SELECT * FROM Pemesanan WHERE id_murid = ? ORDER BY waktu_mulai DESC";
         List<Pemesanan> list = new ArrayList<>();
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -71,7 +71,7 @@ public class PemesananDAO {
     }
 
     public List<Pemesanan> findByGuruId(int idGuru) {
-        String sql = "SELECT * FROM pemesanan WHERE id_guru = ? ORDER BY waktu_mulai DESC";
+        String sql = "SELECT * FROM Pemesanan WHERE id_guru = ? ORDER BY waktu_mulai DESC";
         List<Pemesanan> list = new ArrayList<>();
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -89,7 +89,7 @@ public class PemesananDAO {
     }
 
     public List<Pemesanan> findByStatus(String statusPemesanan) {
-        String sql = "SELECT * FROM pemesanan WHERE status_pemesanan = ? ORDER BY waktu_mulai DESC";
+        String sql = "SELECT * FROM Pemesanan WHERE status_pemesanan = ? ORDER BY waktu_mulai DESC";
         List<Pemesanan> list = new ArrayList<>();
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -107,7 +107,7 @@ public class PemesananDAO {
     }
 
     public List<Pemesanan> findAll() {
-        String sql = "SELECT * FROM pemesanan ORDER BY waktu_mulai DESC";
+        String sql = "SELECT * FROM Pemesanan ORDER BY waktu_mulai DESC";
         List<Pemesanan> list = new ArrayList<>();
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -123,7 +123,7 @@ public class PemesananDAO {
     }
 
     public boolean insert(Pemesanan p) {
-        String sql = "INSERT INTO pemesanan (id_murid, id_guru, id_materi, status_pemesanan, "
+        String sql = "INSERT INTO Pemesanan (id_murid, id_guru, id_materi, status_pemesanan, "
                    + "waktu_mulai, waktu_selesai, lokasi_sesi, foto_dokumentasi) "
                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
@@ -156,7 +156,7 @@ public class PemesananDAO {
     }
 
     public boolean updateStatus(int idPemesanan, String statusBaru) {
-        String sql = "UPDATE pemesanan SET status_pemesanan = ? WHERE id_pemesanan = ?";
+        String sql = "UPDATE Pemesanan SET status_pemesanan = ? WHERE id_pemesanan = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -171,7 +171,7 @@ public class PemesananDAO {
     }
 
     public boolean update(Pemesanan p) {
-        String sql = "UPDATE pemesanan SET id_murid = ?, id_guru = ?, id_materi = ?, "
+        String sql = "UPDATE Pemesanan SET id_murid = ?, id_guru = ?, id_materi = ?, "
                    + "status_pemesanan = ?, waktu_mulai = ?, waktu_selesai = ?, "
                    + "lokasi_sesi = ?, foto_dokumentasi = ? WHERE id_pemesanan = ?";
         try (Connection conn = DBConnection.getConnection();
@@ -197,7 +197,7 @@ public class PemesananDAO {
     }
 
     public boolean delete(int id) {
-        String sql = "DELETE FROM pemesanan WHERE id_pemesanan = ?";
+        String sql = "DELETE FROM Pemesanan WHERE id_pemesanan = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 

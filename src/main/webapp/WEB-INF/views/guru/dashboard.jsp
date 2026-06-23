@@ -6,6 +6,16 @@
 <c:set var="activePage" value="dashboard" />
 <jsp:include page="/WEB-INF/views/layout/header.jsp" />
 
+<c:if test="${not empty error}">
+    <div class="alert-custom alert-danger-custom"><i class="bi bi-exclamation-circle-fill"></i> ${error}</div>
+</c:if>
+<c:if test="${guruNonaktif}">
+    <div class="alert-custom alert-warning-custom">
+        <i class="bi bi-pause-circle-fill"></i>
+        Anda sedang tidak aktif menerima sesi. Aktifkan di <a href="${pageContext.request.contextPath}/profil" class="alert-link">Profil</a> untuk melihat permintaan murid.
+    </div>
+</c:if>
+
 <style>
     .dashboard-banner {
         background-color: var(--humana-navy);
@@ -115,31 +125,104 @@
     }
     .stat-label { font-size: 0.75rem; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; }
     .stat-value { font-size: 1.75rem; font-weight: 700; color: #1E293B; }
+
+    .hero-stat-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-top: 1.5rem;
+        position: relative;
+        z-index: 10;
+    }
+    .hero-stat-card {
+        background: rgba(255, 255, 255, 0.97);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 16px;
+        padding: 1.25rem 1.35rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .hero-stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    }
+    .hero-stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+    .hero-stat-icon.rating { background: #FEF3C7; color: #D97706; }
+    .hero-stat-icon.sesi { background: #DBEAFE; color: #2563EB; }
+    .hero-stat-icon.request { background: #E0E7FF; color: #4F46E5; }
+    .hero-stat-label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: #64748B;
+        margin-bottom: 0.35rem;
+    }
+    .hero-stat-value {
+        font-size: 1.65rem;
+        font-weight: 700;
+        color: #1E293B;
+        line-height: 1.2;
+    }
+    .hero-stat-value .unit {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #94A3B8;
+    }
+    .hero-stat-sub {
+        font-size: 0.75rem;
+        color: #94A3B8;
+        margin-top: 0.2rem;
+    }
+    @media (max-width: 991.98px) {
+        .hero-stat-grid { grid-template-columns: 1fr; }
+        .dashboard-banner { padding: 2rem 1.5rem; }
+        .greeting .title { font-size: 2rem; }
+    }
 </style>
 
 <div class="dashboard-banner mb-4">
     <div class="greeting">
         <div class="title">Halo, ${sessionScope.userName}!</div>
-        <div class="row g-3 mt-3" style="position:relative; z-index:10;">
-            <div class="col-4">
-                <div style="background:white; border:none; border-radius:12px; padding:1rem 1.25rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-                    <div style="font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#64748B; margin-bottom:0.4rem;">KEPUASAN SISWA</div>
-                    <div class="d-flex align-items-center gap-2">
-                        <span style="font-size:1.6rem; font-weight:700; color:#1E293B;"><fmt:formatNumber value="${rating}" maxFractionDigits="1" minFractionDigits="1"/>/5.0</span>
-                        <i class="bi bi-star-fill" style="color:#FBBF24; font-size:1.1rem;"></i>
+        <div class="subtitle mt-2">Kelola permintaan murid dan pantau sesi belajar Anda dari sini.</div>
+        <div class="hero-stat-grid">
+            <div class="hero-stat-card">
+                <div class="hero-stat-icon rating"><i class="bi bi-star-fill"></i></div>
+                <div>
+                    <div class="hero-stat-label">Kepuasan Siswa</div>
+                    <div class="hero-stat-value">
+                        <fmt:formatNumber value="${rating}" maxFractionDigits="1" minFractionDigits="1"/>/5.0
                     </div>
+                    <div class="hero-stat-sub">Rata-rata rating dari murid</div>
                 </div>
             </div>
-            <div class="col-4">
-                <div style="background:white; border:none; border-radius:12px; padding:1rem 1.25rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-                    <div style="font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#64748B; margin-bottom:0.4rem;">SESI AKTIF</div>
-                    <div style="font-size:1.6rem; font-weight:700; color:#1E293B;">${sesiAktif} <span style="font-size:0.9rem; font-weight:400; color:#64748B;">sesi</span></div>
+            <div class="hero-stat-card">
+                <div class="hero-stat-icon sesi"><i class="bi bi-calendar-check"></i></div>
+                <div>
+                    <div class="hero-stat-label">Sesi Aktif</div>
+                    <div class="hero-stat-value">${sesiAktif} <span class="unit">sesi</span></div>
+                    <div class="hero-stat-sub">Sedang berlangsung atau dikonfirmasi</div>
                 </div>
             </div>
-            <div class="col-4">
-                <div style="background:white; border:none; border-radius:12px; padding:1rem 1.25rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-                    <div style="font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#64748B; margin-bottom:0.4rem;">PERMINTAAN MASUK</div>
-                    <div style="font-size:1.6rem; font-weight:700; color:#1E293B;">${permintaanMasuk}</div>
+            <div class="hero-stat-card">
+                <div class="hero-stat-icon request"><i class="bi bi-inbox"></i></div>
+                <div>
+                    <div class="hero-stat-label">Permintaan Masuk</div>
+                    <div class="hero-stat-value">${permintaanMasuk}</div>
+                    <div class="hero-stat-sub">Menunggu konfirmasi Anda</div>
                 </div>
             </div>
         </div>
@@ -197,7 +280,14 @@
     
     <!-- Kanan: Shortcuts -->
     <div class="col-lg-4">
-        <a href="${pageContext.request.contextPath}/jadwal" class="shortcut-item mt-2 mt-lg-0">
+        <a href="${pageContext.request.contextPath}/guru/pendapatan" class="shortcut-item mt-2 mt-lg-0">
+            <div class="shortcut-item-icon"><i class="bi bi-wallet2"></i></div>
+            <div>
+                <div class="fw-bold fs-5 mb-1">Pendapatan</div>
+                <div class="small text-secondary">Lihat ringkasan pendapatan</div>
+            </div>
+        </a>
+        <a href="${pageContext.request.contextPath}/jadwal" class="shortcut-item">
             <div class="shortcut-item-icon"><i class="bi bi-calendar2-week"></i></div>
             <div>
                 <div class="fw-bold fs-5 mb-1">Jadwal Saya</div>
