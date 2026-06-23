@@ -146,8 +146,8 @@
     function renderBadge(status) {
         if (!status) return '';
         var s = status.toLowerCase();
-        if (s === 'menunggu konfirmasi') return '<span class="badge bg-warning text-dark rounded-pill">Menunggu</span>';
-        if (s === 'dikonfirmasi') return '<span class="badge bg-primary rounded-pill">Dikonfirmasi</span>';
+        if (s === 'menunggu konfirmasi') return '<span class="badge text-dark rounded-pill" style="background-color: #FBBF24;">Menunggu</span>';
+        if (s === 'dikonfirmasi') return '<span class="badge text-white rounded-pill" style="background-color: #2B4C7E;">Dikonfirmasi</span>';
         if (s === 'berlangsung') return '<span class="badge bg-success rounded-pill">Berlangsung</span>';
         return '<span class="badge bg-secondary rounded-pill">' + status + '</span>';
     }
@@ -171,7 +171,7 @@
                 if (!isLunas(j)) {
                     html += '<a href="' + ctx + '/bayar?id=' + j.idPemesanan + '" class="btn btn-primary btn-sm rounded-pill px-4">Bayar</a>';
                 } else {
-                    html += '<span class="badge bg-info rounded-pill px-3 py-2">Menunggu Waktu Sesi</span>';
+                    html += '<span class="badge text-dark rounded-pill px-3 py-2" style="background-color: #FBBF24;">Menunggu Waktu Sesi</span>';
                 }
             } else if (s === 'berlangsung') {
                 html += '<span class="badge bg-success rounded-pill px-3 py-2">Sedang Berlangsung</span>';
