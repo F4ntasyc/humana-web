@@ -86,9 +86,10 @@ public class HistoryServlet extends HttpServlet {
                 "SET p.status_pemesanan = 'berlangsung' " +
                 "WHERE p.status_pemesanan = 'dikonfirmasi' " +
                 "AND bay.status_pembayaran = 'lunas' " +
-                "AND p.waktu_mulai <= NOW()";
+                "AND p.waktu_mulai <= ?";
         try (Connection conn = DBConnection.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setTimestamp(1, new java.sql.Timestamp(System.currentTimeMillis()));
             stmt.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
