@@ -458,7 +458,7 @@
                 </div>
                 <h1 class="hero-title">
                     <span>Humanity in action,</span><br>
-                    <span class="accent">Learning in motion.</span>
+                    <span>Learning in motion.</span>
                 </h1>
                 <p class="hero-subtitle">
                     Platform ekosistem pendidikan cerdas yang menghubungkan pelajar dan pengajar privat berkualitas untuk masa depan gemilang.
