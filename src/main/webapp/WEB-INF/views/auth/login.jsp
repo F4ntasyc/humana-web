@@ -458,7 +458,7 @@
                 </div>
                 <h1 class="hero-title">
                     <span>Humanity in action,</span><br>
-                    <span class="accent">Learning in motion.</span>
+                    <span>Learning in motion.</span>
                 </h1>
                 <p class="hero-subtitle">
                     Platform ekosistem pendidikan cerdas yang menghubungkan pelajar dan pengajar privat berkualitas untuk masa depan gemilang.
@@ -511,13 +511,6 @@
                         </div>
                     </div>
 
-                    <div class="form-options">
-                        <label class="checkbox-wrapper">
-                            <input type="checkbox" name="remember" id="rememberMe">
-                            <span>Ingat saya di perangkat ini</span>
-                        </label>
-                        <a href="#" class="link-forgot">Lupa sandi?</a>
-                    </div>
 
                     <button type="submit" class="btn-primary">
                         Masuk Sekarang <i class="bi bi-arrow-right"></i>

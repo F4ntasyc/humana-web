@@ -95,16 +95,16 @@
                         <div class="mb-4">
                             <label class="form-label fw-semibold text-secondary mb-2" style="font-size: 0.875rem;">Pilih Metode Pembayaran</label>
                             
-                            <div class="form-check mb-2 p-3 border rounded" style="background-color: #F8FAFC;">
-                                <input class="form-check-input ms-1" type="radio" name="metodePembayaran" id="metodeTransfer" value="Transfer Bank" required>
-                                <label class="form-check-label fw-semibold ms-2 w-100" for="metodeTransfer">
+                            <div class="form-check mb-2 p-3 border rounded d-flex align-items-center" style="background-color: #F8FAFC;">
+                                <input class="form-check-input m-0 flex-shrink-0" type="radio" name="metodePembayaran" id="metodeTransfer" value="Transfer Bank" required style="width: 1.25rem; height: 1.25rem;">
+                                <label class="form-check-label fw-semibold ms-3 w-100 mb-0" for="metodeTransfer" style="cursor: pointer; padding-top: 2px;">
                                     Transfer Bank
                                 </label>
                             </div>
                             
-                            <div class="form-check p-3 border rounded" style="background-color: #F8FAFC;">
-                                <input class="form-check-input ms-1" type="radio" name="metodePembayaran" id="metodeTunai" value="Tunai (COD)" required>
-                                <label class="form-check-label fw-semibold ms-2 w-100" for="metodeTunai">
+                            <div class="form-check p-3 border rounded d-flex align-items-center" style="background-color: #F8FAFC;">
+                                <input class="form-check-input m-0 flex-shrink-0" type="radio" name="metodePembayaran" id="metodeTunai" value="Tunai (COD)" required style="width: 1.25rem; height: 1.25rem;">
+                                <label class="form-check-label fw-semibold ms-3 w-100 mb-0" for="metodeTunai" style="cursor: pointer; padding-top: 2px;">
                                     Tunai (Diberikan saat sesi)
                                 </label>
                             </div>
